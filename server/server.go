@@ -1,0 +1,87 @@
+package server
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+)
+
+// Implements the Noid server API
+
+func PoolsHandler(w http.ResponseWriter, r *http.Request) {
+	names := AllPools()
+	enc := json.NewEncoder(w)
+	enc.Encode(names)
+}
+
+func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("name")
+	template := r.FormValue("template")
+	if name == "" || template == "" {
+		http.Error(w, "missing arguments", 400)
+		return
+	}
+	err := AddPool(name, template)
+	if err != nil {
+		if err == NameExists {
+			http.Error(w, "name already exists", 409)
+		} else {
+			http.Error(w, err.Error(), 400)
+		}
+		return
+	}
+	w.WriteHeader(201)
+}
+
+func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue(":poolname")
+	pi, err := GetPool(name)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	enc := json.NewEncoder(w)
+	enc.Encode(pi)
+}
+
+func PoolOpenHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue(":poolname")
+	err := SetPoolState(name, false)
+	if err != nil {
+		http.Error(w, err.Error(), 403)
+	}
+}
+
+func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue(":poolname")
+	err := SetPoolState(name, true)
+	if err != nil {
+		http.Error(w, err.Error(), 403)
+	}
+}
+
+func MintHandler(w http.ResponseWriter, r *http.Request) {
+	var count int = 1
+	var err error
+
+	name := r.FormValue(":poolname")
+	n := r.FormValue("n")
+
+	if n != "" {
+		count, err = strconv.Atoi(n)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+	}
+
+	ids, err := PoolMint(name, count)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	enc := json.NewEncoder(w)
+	enc.Encode(ids)
+}
