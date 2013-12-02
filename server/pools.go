@@ -2,8 +2,8 @@ package server
 
 import (
 	"errors"
-	"fmt"
 	"sync"
+	"time"
 
 	"github.com/dbrower/noids/noid"
 )
@@ -12,13 +12,16 @@ type PoolInfo struct {
 	Name, Template string
 	Used, Max      int
 	Closed         bool
+	LastMint       time.Time
 }
 
 type pool struct {
-	m      sync.Mutex
-	noid   noid.Noid
-	closed bool
-	empty  bool
+	m        sync.Mutex
+	noid     noid.Noid
+	closed   bool
+	empty    bool
+	lastMint time.Time
+	needSave bool
 }
 
 type poolNames struct {
@@ -36,23 +39,13 @@ var (
 )
 
 func AddPool(name, template string) error {
-	pools.m.Lock()
-	defer pools.m.Unlock()
-	fmt.Printf("%v\n", pools)
-	_, ok := pools.table[name]
-	if ok {
-		return NameExists
-	}
-	noid, err := noid.NewNoid(template)
-	if err != nil {
-		return err
-	}
-	pools.table[name] = &pool{
-		noid:   noid,
-		closed: false,
-	}
-	pools.names = append(pools.names, name)
-	return nil
+	err := loadFromInfo(
+		PoolInfo{
+			Name:     name,
+			Template: template,
+		},
+		true)
+	return err
 }
 
 func AllPools() []string {
@@ -89,10 +82,17 @@ func GetPool(name string) (PoolInfo, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	result.Template = p.noid.String()
-	result.Used, result.Max = p.noid.Count()
-	result.Closed = p.closed
+	copyPoolInfo(&result, p)
+
 	return result, nil
+}
+
+// this expects to be called while the lock on p is held
+func copyPoolInfo(pi *PoolInfo, p *pool) {
+	pi.Template = p.noid.String()
+	pi.Used, pi.Max = p.noid.Count()
+	pi.Closed = p.closed
+	pi.LastMint = p.lastMint
 }
 
 func SetPoolState(name string, newClosed bool) error {
@@ -107,12 +107,15 @@ func SetPoolState(name string, newClosed bool) error {
 	if !newClosed && p.empty {
 		return PoolEmpty
 	}
-	p.closed = newClosed
+	if p.closed != newClosed {
+		p.closed = newClosed
+		p.needSave = true
+	}
 	return nil
 }
 
 func PoolMint(name string, count int) ([]string, error) {
-	var result []string
+	var result []string = make([]string, 0, count)
 	p, err := lookupPool(name)
 	if err != nil {
 		return result, err
@@ -132,5 +135,32 @@ func PoolMint(name string, count int) ([]string, error) {
 		count--
 	}
 
+	if len(result) > 0 {
+		p.lastMint = time.Now()
+		p.needSave = true
+	}
+
 	return result, nil
+}
+
+func loadFromInfo(pi PoolInfo, needSave bool) error {
+	pools.m.Lock()
+	defer pools.m.Unlock()
+	_, ok := pools.table[pi.Name]
+	if ok {
+		return NameExists
+	}
+	noid, err := noid.NewNoid(pi.Template)
+	if err != nil {
+		return err
+	}
+	pools.table[pi.Name] = &pool{
+		noid:     noid,
+		needSave: needSave,
+		closed:   pi.Closed,
+		empty:    pi.Used == pi.Max,
+		lastMint: pi.LastMint,
+	}
+	pools.names = append(pools.names, pi.Name)
+	return nil
 }

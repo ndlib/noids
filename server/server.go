@@ -46,16 +46,16 @@ func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PoolOpenHandler(w http.ResponseWriter, r *http.Request) {
-	name := r.FormValue(":poolname")
-	err := SetPoolState(name, false)
-	if err != nil {
-		http.Error(w, err.Error(), 403)
-	}
+	handleOpenClose(w, r, false)
 }
 
 func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
+	handleOpenClose(w, r, true)
+}
+
+func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 	name := r.FormValue(":poolname")
-	err := SetPoolState(name, true)
+	err := SetPoolState(name, makeClosed)
 	if err != nil {
 		http.Error(w, err.Error(), 403)
 	}
@@ -72,6 +72,10 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 		count, err = strconv.Atoi(n)
 		if err != nil {
 			http.Error(w, err.Error(), 400)
+			return
+		}
+		if count <= 0 || count > 1000 {
+			http.Error(w, "count is out of range", 400)
 			return
 		}
 	}

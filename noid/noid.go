@@ -57,8 +57,11 @@ const (
 
 // Noid objects are not safe for simultaneous access
 type Noid interface {
+	// create a new id number, and update the internal state
 	Mint() string
+	// returns the template used to create this noid generator
 	String() string
+	// returns the number of noids minted and the maximum number possible
 	Count() (int, int)
 }
 
