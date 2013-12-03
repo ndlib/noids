@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -59,7 +58,7 @@ func (si saverInfo) saver() {
 // the overall pool lock while asking for each pool.
 // But, in that case, we will get it during the next sweep
 func (si saverInfo) saveSweep(force bool) {
-	log.Println("Save Sweep")
+	// log.Println("Save Sweep")
 	poolList := AllPools()
 	for _, pname := range poolList {
 		p, err := lookupPool(pname)
@@ -97,6 +96,7 @@ func (si saverInfo) savePool(name string, p *pool) error {
 }
 
 func LoadPools(storageDir string) {
+	log.Println("Loading pools in", storageDir)
 	f, err := os.Open(storageDir)
 	if err != nil {
 		log.Fatal(err)
@@ -109,9 +109,6 @@ func LoadPools(storageDir string) {
 		for _, s := range names {
 			loadpool(path.Join(storageDir, s), s)
 		}
-	}
-	if err != io.EOF {
-		log.Println(err)
 	}
 }
 
@@ -128,5 +125,6 @@ func loadpool(filename, poolname string) {
 		log.Fatal(err)
 	}
 
+	log.Println("Loading", pi.Name)
 	loadFromInfo(pi, false)
 }

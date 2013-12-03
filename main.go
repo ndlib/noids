@@ -22,7 +22,7 @@ func main() {
 
 	flag.IntVarP(&port, "port", "p", 8080, "port to run on")
 	flag.StringVarP(&logfile, "log", "l", "", "name of log file")
-	flag.StringVarP(&storageDir, "storage", "s", "pools", "directory to save noid information")
+	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
 
 	flag.Parse()
 
@@ -35,8 +35,10 @@ func main() {
 		logw = f
 		log.SetOutput(f)
 	}
-
-	_ = server.StartSaver(storageDir)
+	if storageDir != "" {
+		server.LoadPools(storageDir)
+		server.StartSaver(storageDir)
+	}
 
 	r := pat.New()
 	r.Get("/pools/{poolname}", server.PoolShowHandler)
