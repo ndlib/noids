@@ -36,6 +36,7 @@ var (
 	NameExists = errors.New("Name already exists")
 	NoSuchPool = errors.New("Pool could not be found")
 	PoolEmpty  = errors.New("Pool is empty")
+	PoolClosed = errors.New("Pool is closed")
 )
 
 func AddPool(name, template string) error {
@@ -43,6 +44,7 @@ func AddPool(name, template string) error {
 		PoolInfo{
 			Name:     name,
 			Template: template,
+			LastMint: time.Now(),
 		},
 		true)
 	return err
@@ -123,6 +125,10 @@ func PoolMint(name string, count int) ([]string, error) {
 
 	p.m.Lock()
 	defer p.m.Unlock()
+
+	if p.closed {
+		return result, PoolClosed
+	}
 
 	for count > 0 {
 		id := p.noid.Mint()
