@@ -169,12 +169,12 @@ func loadFromInfo(pi *PoolInfo, needSave bool) error {
 		noid:     noid,
 		needSave: needSave,
 		closed:   pi.Closed,
-		empty:    pi.Used == pi.Max,
 		lastMint: pi.LastMint,
 	}
 	pools.table[pi.Name] = p
 	pools.names = append(pools.names, pi.Name)
-	// don't technically hold the lock for p, but we are holding the lock for pools
+	// don't technically hold the lock for p, but we ARE holding the lock for pools
 	copyPoolInfo(pi, p)
+	p.empty = pi.Used == pi.Max
 	return nil
 }
