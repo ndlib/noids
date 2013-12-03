@@ -98,6 +98,9 @@ func (si saverInfo) LoadPools() {
 
 	for i := range pis {
 		log.Println("Loading", pis[i].Name)
-		loadFromInfo(&pis[i], false)
+		err := loadFromInfo(&pis[i], false)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
