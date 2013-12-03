@@ -100,7 +100,7 @@ func copyPoolInfo(pi *PoolInfo, p *pool) {
 }
 
 func SetPoolState(name string, newClosed bool) (PoolInfo, error) {
-	var pi PoolInfo
+	pi := PoolInfo{Name: name}
 	p, err := lookupPool(name)
 	if err != nil {
 		return pi, err
@@ -155,7 +155,7 @@ func PoolMint(name string, count int) ([]string, error) {
 }
 
 func PoolAdvancePast(name, id string) (PoolInfo, error) {
-	var pi PoolInfo
+	pi := PoolInfo{Name: name}
 	p, err := lookupPool(name)
 	if err != nil {
 		return pi, err
