@@ -56,6 +56,17 @@ Get noid information:
     $ curl http://localhost:8080/pools/abc
     {"Name":"abc","Template":".seek+11","Used":11,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:40:50.657972456-05:00"}
 
+To help sync the minter with ids which have already been minted, use the AdvancePast route.
+Calling this with an id will ensure that id will never be minted by this server.
+
+    $ curl -X POST 'http://localhost:8080/pools/abc/advancePast?id=bb1'
+    {"Name":"abc","Template":".seek+301","Used":301,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:43:53.049369916-05:00"}
+
+So now if we were to mint again:
+
+    $ curl -X POST 'http://localhost:8080/pools/abc/mint'
+    ["bc3"]
+
 # Security and Authentication
 
 There is none. Perhaps later?
@@ -64,4 +75,3 @@ There is none. Perhaps later?
 
 * Convert the saver to be demand driven rather than polling
 * Standardize the naming: a noid _counter_ belongs to a _pool_, etc.
-* Add a _AdvancePast_ feature for counters, so that we can sync this noid server with noids which have already been minted.
