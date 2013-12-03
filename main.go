@@ -44,6 +44,7 @@ func main() {
 	r.Put("/pools/{poolname}/open", server.PoolOpenHandler)
 	r.Put("/pools/{poolname}/close", server.PoolCloseHandler)
 	r.Post("/pools/{poolname}/mint", server.MintHandler)
+	r.Post("/pools/{poolname}/advancePast", server.AdvancePastHandler)
 	// r.Get("/stats", StatsHandler)
 	r.Get("/pools", server.PoolsHandler)
 	r.Post("/pools", server.NewPoolHandler)

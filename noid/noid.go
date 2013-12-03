@@ -63,6 +63,15 @@ type Noid interface {
 	String() string
 	// returns the number of noids minted and the maximum number possible
 	Count() (int, int)
+	// return the id's sequence number (0 = first id minted, 1 = second id
+	// minted, etc) or -1 if the id is invalid for this noid.
+	// n.b. The sequence number may be higher than the number of noids
+	// minted so far
+	Index(id string) int
+	// move the minter counter to n, may be any integer between 0 and this noid's MAX
+	// setting the index to == MAX will have the effect of exhausting the noid
+	// indexes outside that range are silently ignored
+	AdvanceTo(n int)
 }
 
 func NewNoid(template string) (Noid, error) {
@@ -140,6 +149,22 @@ func (ns *noidState) String() string {
 	return ns.template.String() + fmt.Sprintf("+%d", ns.position)
 }
 
+func (ns *noidState) Index(id string) int {
+	v := ns.valid(id)
+	if v != -1 && ns.generator == 'r' {
+		v = ns.r.invSwizzle(v)
+	}
+	return v
+}
+
+func (ns *noidState) AdvanceTo(n int) {
+	if n < 0 || (ns.max >= 0 && n > ns.max) {
+		// out of range. silently ignore
+		return
+	}
+	ns.position = n
+}
+
 type noidState struct {
 	template
 	position int
@@ -154,6 +179,38 @@ func (ns noidState) mint(n int) string {
 		s += checksum(s)
 	}
 	return s
+}
+
+// returns the id's index position, or -1 if invalid
+func (ns noidState) valid(id string) int {
+	// does slug prefix match?
+	if !strings.HasPrefix(id, ns.slug) {
+		return -1
+	}
+	// does the checksum match?
+	if ns.checkDigit && checksum(id[:len(id)-1]) != id[len(id)-1:len(id)] {
+		return -1
+	}
+	// are the digits the correct length?
+	digits := id[len(ns.slug):]
+	if ns.checkDigit {
+		digits = digits[:len(digits)-1]
+	}
+	if len(digits) < len(ns.sizes) {
+		return -1
+	}
+	if ns.generator != 'z' && len(digits) > len(ns.sizes) {
+		return -1
+	}
+	// translate the digits and see if they are the correct types
+	v := ns.ntoi(digits)
+
+	// is the number too large?
+	if ns.max != -1 && v >= ns.max {
+		return -1
+	}
+
+	return v
 }
 
 // This is complicated since we want to use the same binning method as the ruby
@@ -227,17 +284,17 @@ func (rs randomState) invSwizzle(n int) int {
 
 // Given an integer n inside the range of the template,
 // return the corresponding id string
-func (t noidState) iton(n int) string {
-	var buffer []byte = make([]byte, 0, len(t.sizes))
+func (ns noidState) iton(n int) string {
+	var buffer []byte = make([]byte, 0, len(ns.sizes))
 
-	for _, size := range t.sizes {
+	for _, size := range ns.sizes {
 		value := n % size
 		n /= size
 		buffer = append(buffer, XDigit[value])
 	}
 
-	if t.generator == 'z' {
-		size := t.sizes[len(t.sizes)-1]
+	if ns.generator == 'z' {
+		size := ns.sizes[len(ns.sizes)-1]
 		for n > 0 {
 			value := n % size
 			n /= size
@@ -251,9 +308,34 @@ func (t noidState) iton(n int) string {
 	return string(reverse(buffer))
 }
 
-// This checksum function comes from the noid spec.
+func (ns noidState) ntoi(id string) int {
+	// first translate each digit to an index
+	var digits []int = make([]int, len(id))
+	for i, c := range id {
+		digits[i] = strings.IndexRune(XDigit, c)
+		if digits[i] == -1 {
+			return -1
+		}
+	}
+	// now build up the value from back-to-front
+	var multiplier int = 1
+	var value int
+	var sizeIdx int = 0
+	for i := len(digits) - 1; i >= 0; i-- {
+		if ns.sizes[sizeIdx] <= digits[i] {
+			return -1
+		}
+		value += digits[i] * multiplier
+		multiplier *= ns.sizes[sizeIdx]
+		if sizeIdx < len(ns.sizes)-1 {
+			sizeIdx++
+		}
+	}
+	return value
+}
+
+// This checksum function comes from the ruby noid gem
 func checksum(s string) string {
-	// Noid::XDIGIT[str.split('').map { |x| Noid::XDIGIT.index(x).to_i }.each_with_index.map { |n, idx| n*(idx+1) }.inject { |sum, n| sum += n }  % Noid::XDIGIT.length ]
 	var sum int
 	for i, c := range s {
 		v := strings.IndexRune(XDigit, c)

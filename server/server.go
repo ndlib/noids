@@ -100,3 +100,24 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.Encode(ids)
 }
+
+func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RequestURI)
+
+	name := r.FormValue(":poolname")
+	id := r.FormValue("id")
+
+	if id == "" {
+		http.Error(w, "id parameter is required", 400)
+		return
+	}
+
+	pi, err := PoolAdvancePast(name, id)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	enc := json.NewEncoder(w)
+	enc.Encode(pi)
+}

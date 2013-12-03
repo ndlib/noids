@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"log"
 	"sync"
 	"time"
 
@@ -37,6 +38,7 @@ var (
 	NoSuchPool = errors.New("Pool could not be found")
 	PoolEmpty  = errors.New("Pool is empty")
 	PoolClosed = errors.New("Pool is closed")
+	InvalidId  = errors.New("Id is invalid for this counter")
 )
 
 func AddPool(name, template string) (PoolInfo, error) {
@@ -150,6 +152,33 @@ func PoolMint(name string, count int) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+func PoolAdvancePast(name, id string) (PoolInfo, error) {
+	var pi PoolInfo
+	p, err := lookupPool(name)
+	if err != nil {
+		return pi, err
+	}
+
+	p.Lock()
+	defer p.Unlock()
+
+	index := p.noid.Index(id)
+	log.Printf("Index(%v) = %v\n", id, index)
+	if index == -1 {
+		copyPoolInfo(&pi, p)
+		return pi, InvalidId
+	}
+	position, _ := p.noid.Count()
+	if index >= position {
+		p.noid.AdvanceTo(index + 1)
+		p.lastMint = time.Now()
+		p.needSave = true
+	}
+
+	copyPoolInfo(&pi, p)
+	return pi, nil
 }
 
 // creates a new pool entry using the information in `pi`.

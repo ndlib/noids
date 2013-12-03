@@ -1,7 +1,6 @@
 package noid
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -61,15 +60,37 @@ func TestGenerateSizes(t *testing.T) {
 	}
 }
 
-func TestIton(t *testing.T) {
-	// TODO: copy ruby noid tests into here
-	ns := noidState{template: template{generator: 'z', template: "ed"}, sizes: generateSizes("ed")}
-	fmt.Println(ns.iton(2901))
+func TestIndex(t *testing.T) {
+	table := []struct {
+		template string
+		valids   []string
+		invalids []string
+	}{
+		{".sdk", []string{"00", "11", "22", "99"}, []string{"bb", "011", "5b"}},
+		{"slug..zdd", []string{"slug.00", "slug.2345"}, []string{"slug.0", "23"}},
+		{".sede", []string{"z9z", "000", "b9j", "123"}, []string{"a79", "45", "xj00"}},
+	}
+
+	for _, row := range table {
+		n, _ := NewNoid(row.template)
+		for _, s := range row.valids {
+			x := n.Index(s)
+			if x == -1 {
+				t.Errorf("%s gives Index(%s) = %v\n", row.template, s, x)
+			}
+		}
+		for _, s := range row.invalids {
+			x := n.Index(s)
+			if x != -1 {
+				t.Errorf("%s gives Index(%s) = %v\n", row.template, s, x)
+			}
+		}
+	}
 }
 
 func TestChecksum(t *testing.T) {
 	// TODO: add better test here using the expected checksums from ruby noid
-	fmt.Println(checksum("abcdefg"))
+	//fmt.Println(checksum("abcdefg"))
 }
 
 func TestNoid(t *testing.T) {
@@ -85,6 +106,5 @@ func TestNoid(t *testing.T) {
 		if z != s {
 			t.Errorf("%v != %v\n", z, s)
 		}
-		fmt.Printf("%v\n", n)
 	}
 }
