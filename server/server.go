@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -9,12 +10,14 @@ import (
 // Implements the Noid server API
 
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RequestURI)
 	names := AllPools()
 	enc := json.NewEncoder(w)
 	enc.Encode(names)
 }
 
 func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RequestURI)
 	name := r.FormValue("name")
 	template := r.FormValue("template")
 	if name == "" || template == "" {
@@ -36,6 +39,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RequestURI)
 	name := r.FormValue(":poolname")
 	pi, err := GetPool(name)
 	if err != nil {
@@ -56,6 +60,7 @@ func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
+	log.Println(r.RequestURI)
 	name := r.FormValue(":poolname")
 	pi, err := SetPoolState(name, makeClosed)
 	if err != nil {
@@ -67,6 +72,7 @@ func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 }
 
 func MintHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RequestURI)
 	var count int = 1
 	var err error
 
