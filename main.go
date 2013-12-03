@@ -36,8 +36,7 @@ func main() {
 		log.SetOutput(f)
 	}
 	if storageDir != "" {
-		server.LoadPools(storageDir)
-		server.StartSaver(storageDir)
+		server.StartSaver(server.NewJsonFileSaver(storageDir))
 	}
 
 	r := pat.New()

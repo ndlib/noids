@@ -21,7 +21,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing arguments", 400)
 		return
 	}
-	err := AddPool(name, template)
+	pi, err := AddPool(name, template)
 	if err != nil {
 		if err == NameExists {
 			http.Error(w, "name already exists", 409)
@@ -31,6 +31,8 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(201)
+	enc := json.NewEncoder(w)
+	enc.Encode(pi)
 }
 
 func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,10 +57,13 @@ func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 	name := r.FormValue(":poolname")
-	err := SetPoolState(name, makeClosed)
+	pi, err := SetPoolState(name, makeClosed)
 	if err != nil {
 		http.Error(w, err.Error(), 403)
+		return
 	}
+	enc := json.NewEncoder(w)
+	enc.Encode(pi)
 }
 
 func MintHandler(w http.ResponseWriter, r *http.Request) {

@@ -16,7 +16,7 @@ type PoolInfo struct {
 }
 
 type pool struct {
-	m        sync.Mutex
+	sync.Mutex
 	noid     noid.Noid
 	closed   bool
 	empty    bool
@@ -25,7 +25,7 @@ type pool struct {
 }
 
 type poolNames struct {
-	m     sync.Mutex
+	sync.Mutex
 	table map[string]*pool
 	names []string
 }
@@ -39,20 +39,19 @@ var (
 	PoolClosed = errors.New("Pool is closed")
 )
 
-func AddPool(name, template string) error {
-	err := loadFromInfo(
-		PoolInfo{
-			Name:     name,
-			Template: template,
-			LastMint: time.Now(),
-		},
-		true)
-	return err
+func AddPool(name, template string) (PoolInfo, error) {
+	pi := PoolInfo{
+		Name:     name,
+		Template: template,
+		LastMint: time.Now(),
+	}
+	err := loadFromInfo(&pi, true)
+	return pi, err
 }
 
 func AllPools() []string {
-	pools.m.Lock()
-	defer pools.m.Unlock()
+	pools.Lock()
+	defer pools.Unlock()
 
 	result := make([]string, len(pools.names))
 	copy(result, pools.names)
@@ -63,9 +62,9 @@ func AllPools() []string {
 func lookupPool(name string) (*pool, error) {
 	var err error = nil
 
-	pools.m.Lock()
+	pools.Lock()
 	p := pools.table[name]
-	pools.m.Unlock()
+	pools.Unlock()
 
 	if p == nil {
 		err = NoSuchPool
@@ -81,15 +80,16 @@ func GetPool(name string) (PoolInfo, error) {
 		return result, err
 	}
 
-	p.m.Lock()
-	defer p.m.Unlock()
+	p.Lock()
+	defer p.Unlock()
 
 	copyPoolInfo(&result, p)
 
 	return result, nil
 }
 
-// this expects to be called while the lock on p is held
+// Copies the information in p into pi.
+// expects the caller to be holding the lock on p
 func copyPoolInfo(pi *PoolInfo, p *pool) {
 	pi.Template = p.noid.String()
 	pi.Used, pi.Max = p.noid.Count()
@@ -97,23 +97,26 @@ func copyPoolInfo(pi *PoolInfo, p *pool) {
 	pi.LastMint = p.lastMint
 }
 
-func SetPoolState(name string, newClosed bool) error {
+func SetPoolState(name string, newClosed bool) (PoolInfo, error) {
+	var pi PoolInfo
 	p, err := lookupPool(name)
 	if err != nil {
-		return err
+		return pi, err
 	}
 
-	p.m.Lock()
-	defer p.m.Unlock()
+	p.Lock()
+	defer p.Unlock()
 
 	if !newClosed && p.empty {
-		return PoolEmpty
+		copyPoolInfo(&pi, p)
+		return pi, PoolEmpty
 	}
 	if p.closed != newClosed {
 		p.closed = newClosed
 		p.needSave = true
 	}
-	return nil
+	copyPoolInfo(&pi, p)
+	return pi, nil
 }
 
 func PoolMint(name string, count int) ([]string, error) {
@@ -123,8 +126,8 @@ func PoolMint(name string, count int) ([]string, error) {
 		return result, err
 	}
 
-	p.m.Lock()
-	defer p.m.Unlock()
+	p.Lock()
+	defer p.Unlock()
 
 	if p.closed {
 		return result, PoolClosed
@@ -149,9 +152,11 @@ func PoolMint(name string, count int) ([]string, error) {
 	return result, nil
 }
 
-func loadFromInfo(pi PoolInfo, needSave bool) error {
-	pools.m.Lock()
-	defer pools.m.Unlock()
+// creates a new pool entry using the information in `pi`.
+// updates `pi` with the result (e.g. fix the Used and Max fields)
+func loadFromInfo(pi *PoolInfo, needSave bool) error {
+	pools.Lock()
+	defer pools.Unlock()
 	_, ok := pools.table[pi.Name]
 	if ok {
 		return NameExists
@@ -160,13 +165,16 @@ func loadFromInfo(pi PoolInfo, needSave bool) error {
 	if err != nil {
 		return err
 	}
-	pools.table[pi.Name] = &pool{
+	p := &pool{
 		noid:     noid,
 		needSave: needSave,
 		closed:   pi.Closed,
 		empty:    pi.Used == pi.Max,
 		lastMint: pi.LastMint,
 	}
+	pools.table[pi.Name] = p
 	pools.names = append(pools.names, pi.Name)
+	// don't technically hold the lock for p, but we are holding the lock for pools
+	copyPoolInfo(pi, p)
 	return nil
 }
