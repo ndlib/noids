@@ -52,7 +52,8 @@ var (
 )
 
 const (
-	XDigit = "0123456789bcdfghjkmnpqrstvwxz"
+	XDigit          = "0123456789bcdfghjkmnpqrstvwxz"
+	defaultBinCount = 293
 )
 
 // Noid objects are not safe for simultaneous access
@@ -88,7 +89,7 @@ func NewNoid(template string) (Noid, error) {
 		result.position = result.pos
 	}
 	if result.generator == 'r' {
-		var bincount int = 293
+		var bincount int = defaultBinCount
 		if result.binCount > 0 && result.binCount < 10000 {
 			bincount = result.binCount
 		}
@@ -400,7 +401,7 @@ func parseTemplate(t string) (template, bool) {
 
 func (t template) String() string {
 	s := fmt.Sprintf("%s.%c", t.slug, t.generator)
-	if t.generator == 'r' && t.binCount > 0 && t.binCount != 293 {
+	if t.generator == 'r' && t.binCount > 0 && t.binCount != defaultBinCount {
 		s += fmt.Sprintf("%d", t.binCount)
 	}
 	s += t.template
