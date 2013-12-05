@@ -5,6 +5,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/signal"
 
 	"github.com/dbrower/noids/server"
 	"github.com/gorilla/pat"
@@ -17,10 +18,10 @@ var (
 )
 
 func main() {
-	var port int
+	var port string
 	var storageDir string
 
-	flag.IntVarP(&port, "port", "p", 8080, "port to run on")
+	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
 	flag.StringVarP(&logfile, "log", "l", "", "name of log file")
 	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
 
@@ -50,7 +51,7 @@ func main() {
 	r.Post("/pools", server.NewPoolHandler)
 
 	http.Handle("/", r)
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
