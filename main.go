@@ -6,6 +6,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/dbrower/noids/server"
 	"github.com/gorilla/pat"
@@ -16,6 +17,34 @@ var (
 	logfile string
 	logw    *os.File
 )
+
+func signalHandler(sig <-chan os.Signal) {
+	for s := range sig {
+		log.Println("Got", s)
+		switch s {
+		case syscall.SIGUSR1:
+			rotateLogFile()
+		}
+	}
+}
+
+func rotateLogFile() {
+	if logfile == "" {
+		return
+	}
+	if logw != nil {
+		log.Println("Reopening Log files")
+	}
+	f, err := os.OpenFile(logfile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(f)
+	if logw != nil {
+		logw.Close()
+	}
+	logw = f
+}
 
 func main() {
 	var port string
@@ -28,17 +57,15 @@ func main() {
 	flag.Parse()
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	if logfile != "" {
-		f, err := os.OpenFile(logfile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
-		if err != nil {
-			log.Fatal(err)
-		}
-		logw = f
-		log.SetOutput(f)
-	}
+	rotateLogFile() // opens the log file the first time
+	log.Println("-----Starting Server")
+
 	if storageDir != "" {
 		server.StartSaver(server.NewJsonFileSaver(storageDir))
 	}
+	sig := make(chan os.Signal, 5)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
+	go signalHandler(sig)
 
 	r := pat.New()
 	r.Get("/pools/{poolname}", server.PoolShowHandler)
