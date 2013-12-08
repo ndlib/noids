@@ -26,7 +26,7 @@ type pool struct {
 }
 
 type poolNames struct {
-	sync.Mutex
+	sync.RWMutex
 	table map[string]*pool
 	names []string
 }
@@ -52,8 +52,8 @@ func AddPool(name, template string) (PoolInfo, error) {
 }
 
 func AllPools() []string {
-	pools.Lock()
-	defer pools.Unlock()
+	pools.RLock()
+	defer pools.RUnlock()
 
 	result := make([]string, len(pools.names))
 	copy(result, pools.names)
@@ -64,9 +64,9 @@ func AllPools() []string {
 func lookupPool(name string) (*pool, error) {
 	var err error = nil
 
-	pools.Lock()
+	pools.RLock()
 	p := pools.table[name]
-	pools.Unlock()
+	pools.RUnlock()
 
 	if p == nil {
 		err = NoSuchPool
@@ -200,10 +200,9 @@ func loadFromInfo(pi *PoolInfo, needSave bool) error {
 		closed:   pi.Closed,
 		lastMint: pi.LastMint,
 	}
-	pools.table[pi.Name] = p
-	pools.names = append(pools.names, pi.Name)
-	// don't technically hold the lock for p, but we ARE holding the lock for pools
 	copyPoolInfo(pi, p)
 	p.empty = pi.Used == pi.Max
+	pools.table[pi.Name] = p
+	pools.names = append(pools.names, pi.Name)
 	return nil
 }
