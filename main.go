@@ -13,51 +13,62 @@ import (
 	flag "github.com/ogier/pflag"
 )
 
-var (
-	logfile string
-	logw    *os.File
-)
+type Reopener interface {
+	Reopen()
+}
 
-func signalHandler(sig <-chan os.Signal) {
+type loginfo struct {
+	name string
+	f    *os.File
+}
+
+func NewReopener(filename string) *loginfo {
+	return &loginfo{name: filename}
+}
+
+func (li *loginfo) Reopen() {
+	if li.name == "" {
+		return
+	}
+	if li.f != nil {
+		log.Println("Reopening Log files")
+	}
+	newf, err := os.OpenFile(li.name, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(newf)
+	if li.f != nil {
+		li.f.Close()
+	}
+	li.f = newf
+}
+
+func signalHandler(sig <-chan os.Signal, logw Reopener) {
 	for s := range sig {
 		log.Println("Got", s)
 		switch s {
 		case syscall.SIGUSR1:
-			rotateLogFile()
+			logw.Reopen()
 		}
 	}
-}
-
-func rotateLogFile() {
-	if logfile == "" {
-		return
-	}
-	if logw != nil {
-		log.Println("Reopening Log files")
-	}
-	f, err := os.OpenFile(logfile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.SetOutput(f)
-	if logw != nil {
-		logw.Close()
-	}
-	logw = f
 }
 
 func main() {
 	var port string
 	var storageDir string
+	var logfilename string
+    var logw Reopener
 
 	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
-	flag.StringVarP(&logfile, "log", "l", "", "name of log file")
+	flag.StringVarP(&logfilename, "log", "l", "", "name of log file")
 	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
 
 	flag.Parse()
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	rotateLogFile() // opens the log file the first time
+	logw = NewReopener(logfilename)
+	logw.Reopen()
 	log.Println("-----Starting Server")
 
 	if storageDir != "" {
@@ -65,7 +76,7 @@ func main() {
 	}
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
-	go signalHandler(sig)
+	go signalHandler(sig, logw)
 
 	r := pat.New()
 	r.Get("/pools/{poolname}", server.PoolShowHandler)
