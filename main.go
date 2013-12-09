@@ -58,7 +58,7 @@ func main() {
 	var port string
 	var storageDir string
 	var logfilename string
-    var logw Reopener
+	var logw Reopener
 
 	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
 	flag.StringVarP(&logfilename, "log", "l", "", "name of log file")

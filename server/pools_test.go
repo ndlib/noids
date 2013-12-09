@@ -25,34 +25,34 @@ func TestEverything(t *testing.T) {
 }
 
 func TestMint(t *testing.T) {
-    _, err := AddPool("mint", ".sd")
-    if err != nil {
-        t.Fatalf("%v\n", err)
-        return
-    }
-    table := []struct {
-        pool string
-        count int
-        result []string
-        err error
-    } { {"mint", 5, []string{"0", "1", "2", "3", "4"}, nil},
-        {"mint", 1, []string{"5"}, nil},
-        {"mint", 20, []string{"6", "7", "8", "9"}, nil},
-        {"mint", 20, []string{}, PoolClosed},
-    }
-    for _, z := range table {
-        result, err := PoolMint(z.pool, z.count)
-        if err != z.err {
-            t.Errorf("%v\n", err)
-        }
-        if len(result) != len(z.result) {
-            t.Errorf("%v != %v\n", result, z.result)
-        }
-        for i := range result {
-            if result[i] != z.result[i] {
-                t.Errorf("%v != %v\n", result, z.result)
-                break
-            }
-        }
-    }
+	_, err := AddPool("mint", ".sd")
+	if err != nil {
+		t.Fatalf("%v\n", err)
+		return
+	}
+	table := []struct {
+		pool   string
+		count  int
+		result []string
+		err    error
+	}{{"mint", 5, []string{"0", "1", "2", "3", "4"}, nil},
+		{"mint", 1, []string{"5"}, nil},
+		{"mint", 20, []string{"6", "7", "8", "9"}, nil},
+		{"mint", 20, []string{}, PoolClosed},
+	}
+	for _, z := range table {
+		result, err := PoolMint(z.pool, z.count)
+		if err != z.err {
+			t.Errorf("%v\n", err)
+		}
+		if len(result) != len(z.result) {
+			t.Errorf("%v != %v\n", result, z.result)
+		}
+		for i := range result {
+			if result[i] != z.result[i] {
+				t.Errorf("%v != %v\n", result, z.result)
+				break
+			}
+		}
+	}
 }

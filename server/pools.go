@@ -135,7 +135,7 @@ func PoolMint(name string, count int) ([]string, error) {
 		return result, PoolClosed
 	}
 
-	for ; count > 0 ; count-- {
+	for ; count > 0; count-- {
 		id := p.noid.Mint()
 		if id == "" {
 			p.empty = true
@@ -199,6 +199,7 @@ func loadFromInfo(pi *PoolInfo, needSave bool) error {
 		closed:   pi.Closed,
 		lastMint: pi.LastMint,
 	}
+	// don't technically hold the lock for p, but it hasn't been inserted into pools, yet
 	copyPoolInfo(pi, p)
 	p.empty = pi.Used == pi.Max
 	pools.table[pi.Name] = p
