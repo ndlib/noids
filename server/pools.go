@@ -135,7 +135,7 @@ func PoolMint(name string, count int) ([]string, error) {
 		return result, PoolClosed
 	}
 
-	for count > 0 {
+	for ; count > 0 ; count-- {
 		id := p.noid.Mint()
 		if id == "" {
 			p.empty = true
@@ -143,7 +143,6 @@ func PoolMint(name string, count int) ([]string, error) {
 			break
 		}
 		result = append(result, id)
-		count--
 	}
 
 	if len(result) > 0 {
