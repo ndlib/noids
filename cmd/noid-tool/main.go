@@ -21,82 +21,42 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"os"
+	"strconv"
 
 	"github.com/dbrower/noids/noid"
 )
 
 func usage() {
-    fmt.Println(`
-noid-tool
+	fmt.Println(`noid-tool
 
 a command line utility to decode and validate noids.
 
 usage:
 
-noid-tool -i <template list>
-noid-tool <template> [<noid list>]
+noid-tool info [<template list>]
+noid-tool valid <template> [<noid list>]
+noid-tool generate <template> [<number list>]
 
 Options:
- -i      print information about the given templates
  -h      print this help text and exit
 
-when the -i option is given, noid-tool will display information about  the
-given templates to stdout. Otherwise noid-tool will output the sequence
-number of each noid with respect to the given template. If the noid is
-invalid, it will have a sequence number of -1. If no noids are given on
-the command line, noid-tool will take them from stdin, with each noid on its
-own line.`)
-}
+'info'
+    Display information about the given templates to stdout.
 
-type Liner interface {
-	Line() (string, error) // returns the next line, or an error
-}
+'valid'
+    Output the sequence number of each id with respect to the given template.
+    Invalid ids will have a sequence number of -1.
 
-type arrayLiner struct {
-	lines []string
-	next  int
-}
+'generate'
+    Output the ids associated to each given sequence number.
+    
 
-var LinesDone error = errors.New("EOF")
-
-func NewArrayLiner(a []string) Liner {
-	return &arrayLiner{lines: a}
-}
-
-func (a *arrayLiner) Line() (string, error) {
-	if a.next >= len(a.lines) {
-		return "", LinesDone
-	}
-	a.next++
-	return a.lines[a.next - 1], nil
-}
-
-type readLiner struct {
-	*bufio.Scanner
-}
-
-func NewReadLiner(r io.Reader) Liner {
-	return &readLiner{bufio.NewScanner(r)}
-}
-
-func (r *readLiner) Line() (string, error) {
-	if !r.Scan() {
-		return "", LinesDone
-	}
-	return r.Text(), nil
-}
-
-func printTemplateInfo(t string) {
-	n := getNoid(t)
-	if n == nil {
-		return
-	}
-	fmt.Printf("%s\tValid\n", t)
+If no ids are given on the command line, they will be taken from stdin,
+with each id on its own line.
+`)
 }
 
 func getNoid(template string) *noid.Noid {
@@ -109,47 +69,82 @@ func getNoid(template string) *noid.Noid {
 	return &n
 }
 
-func validateIds(n *noid.Noid, z Liner) {
-	for {
-		line, err := z.Line()
-		if err != nil {
-			break
-		}
-		var idx int = (*n).Index(line)
-		fmt.Printf("%d\t%s\n", idx, line)
+func printTemplateInfo(t string) {
+	n := getNoid(t)
+	if n == nil {
+		return
 	}
+	pos, max := (*n).Count()
+	var used float64 = 0
+	if max != -1 {
+		used = (float64(pos) / float64(max)) * 100
+	}
+	fmt.Printf("%s\tValid, Pos = %d, Max = %d, %0.2f%% used\n", t, pos, max, used)
+}
+
+func validateId(n *noid.Noid, id string) {
+	var idx int = (*n).Index(id)
+	fmt.Printf("%d\t%s\n", idx, id)
+}
+
+func generate(n *noid.Noid, index string) {
+	var i int
+	var result string
+	var err error
+	if i, err = strconv.Atoi(index); err == nil {
+		_, max := (*n).Count()
+		if max == -1 || i < max {
+			(*n).AdvanceTo(i)
+			result = (*n).Mint()
+		}
+	}
+	fmt.Printf("%s\t%s\n", index, result)
 }
 
 func main() {
-	var informational bool
-        flag.Usage = usage
-
-	flag.BoolVar(&informational, "i", false, "Display template information")
+	flag.Usage = usage
 	flag.Parse()
-
 	args := flag.Args()
 
 	if len(args) == 0 {
-		fmt.Println("Usage:")
-		flag.PrintDefaults()
+		flag.Usage()
 		return
 	}
 
-	if informational {
-		for _, t := range args {
-			printTemplateInfo(t)
-		}
-	} else {
-		var n *noid.Noid = getNoid(args[0])
-		if n == nil {
+	// all of the subcommands are essentially line oriented.
+	// Reduce each one to its appropriate processing function, f
+	var f func(string)
+	var rest []string
+	switch args[0] {
+	case "info":
+		f = printTemplateInfo
+		rest = args[1:]
+	case "valid", "generate":
+		if len(args) == 1 {
+			flag.Usage()
 			return
 		}
-		var z Liner
-		if len(args) == 1 {
-			z = NewReadLiner(os.Stdin)
-		} else {
-			z = NewArrayLiner(args[1:])
+		var n *noid.Noid
+		if n = getNoid(args[1]); n == nil {
+			return
 		}
-		validateIds(n, z)
+		if args[0] == "valid" {
+			f = func(s string) { validateId(n, s) }
+		} else {
+			f = func(s string) { generate(n, s) }
+		}
+		rest = args[2:]
+	}
+
+	// take input from either stdin or the command line
+	if len(rest) == 0 {
+		b := bufio.NewScanner(os.Stdin)
+		for b.Scan() {
+			f(b.Text())
+		}
+	} else {
+		for _, id := range rest {
+			f(id)
+		}
 	}
 }
