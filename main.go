@@ -71,13 +71,13 @@ func main() {
 	logw.Reopen()
 	log.Println("-----Starting Server")
 
-	if storageDir != "" {
-		server.StartSaver(server.NewJsonFileSaver(storageDir))
-	}
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
 	go signalHandler(sig, logw)
 
+	if storageDir != "" {
+		server.StartSaver(server.NewJsonFileSaver(storageDir))
+	}
 	r := pat.New()
 	r.Get("/pools/{poolname}", server.PoolShowHandler)
 	r.Put("/pools/{poolname}/open", server.PoolOpenHandler)
