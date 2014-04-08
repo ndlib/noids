@@ -11,6 +11,8 @@ type dirsaver struct {
 	root string
 }
 
+// Create a PoolSaver which will serialize noid pools as
+// json files in a directory.
 func NewJsonFileSaver(dirname string) PoolSaver {
 	return &dirsaver{root: dirname}
 }

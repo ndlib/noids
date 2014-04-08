@@ -1,42 +1,44 @@
 /*
-
-Implements the noid generator as specified in ....
-We aim to be compatible with the ruby noid generator (..link...)
-But, no promises are made.
-In one respect we are different: our random generation does not rely
+Implements the noid generator as specified in https://wiki.ucop.edu/display/Curation/NOID
+We aim to be compatible with the ruby noid generator (https://github.com/microservices/noid)
+In one respect, though, we are different: our random generation does not rely
 on a random number generator. Instead we will always generate the same
-sequence of ids---however they will be scattered throughout the idspace.
+sequence of ids---however the sequence generated will be scattered throughout the idspace.
 
 
 The noid template string has the following format:
 
- <slug> '.' <generator> <bins?> <template> <check?>
+	<slug> '.' <generator> <bins?> <template> <check?>
 
 Where
-     <slug> is any sequence of characters (may be empty).
-     <generator> is one of 'r', 'c', 'z'
-     <bins?> is an optional sequence of decimal digits
-     <digits> is a sequence of 'd' and 'e' characters
-     <check?> is an optional 'k' character
+	<slug> is any sequence of characters (may be empty).
+	<generator> is one of 'r', 'c', 'z'
+	<bins?> is an optional sequence of decimal digits
+	<digits> is a sequence of 'd' and 'e' characters
+	<check?> is an optional 'k' character
 
 The <bins> element is optional, but can only be present if the generator is 'r'
 
 Example format strings:
 
-    id.sd
-        -- produces id0, id1, id2, ..., id9, id10, id11, ...
-    .reeddeeddek
-    .zddddk
-    .r(500)dek
-    .cdek
+	id.sd
+	    -- produces id0, id1, id2, ..., id9, id10, id11, ...
+	.reeddeeddek
+	.zddddk
+	.r500dek
+	.cdek
 
 We extend the template string with state information to completely describe
 a noid minter as a string. The format is
-    <noid template> '+' <number ids minted>
+	<noid template> '+' <number ids minted>
 
-    <id count> is a decimal integer >= 0. it is taken to be 0 if omitted.
+<id count> is a decimal integer >= 0. it is taken to be 0 if omitted.
+
+For example:
+	.zddddk+389
+	.reeddeeddek+54321
+
 */
-
 package noid
 
 import (
@@ -75,6 +77,7 @@ type Noid interface {
 	AdvanceTo(n int)
 }
 
+// Create a new noid minter having the specified template.
 func NewNoid(template string) (Noid, error) {
 	result := &noidState{}
 	t, ok := parseTemplate(template)
@@ -124,6 +127,7 @@ func (ns noidState) maximum() int {
 	return result
 }
 
+// Mint a single identifier using the given noid.
 func (ns *noidState) Mint() string {
 	if ns.max >= 0 && ns.position >= ns.max {
 		// pool exhausted
@@ -137,19 +141,21 @@ func (ns *noidState) Mint() string {
 	return ns.mint(id)
 }
 
-// returns the number of ids minted so far
+// Count returns the number of ids minted so far
 // and the maximum number of ids in the pool
-// (the maximum is == -1 iff the pool is infinite)
+// (the maximum is -1 if the pool is infinite)
 func (ns *noidState) Count() (int, int) {
 	return ns.position, ns.max
 }
 
-// returns the noid state as an "extended" template:
-// the template string followed by the current position (i.e. the next id to be used
+// String returns the noid state as an "extended" template,
+// i.e. the template string followed by the current position
 func (ns *noidState) String() string {
 	return ns.template.String() + fmt.Sprintf("+%d", ns.position)
 }
 
+// Index converts a given identifier to its sequence number.
+// If the identifier is not valid, -1 is returned.
 func (ns *noidState) Index(id string) int {
 	v := ns.valid(id)
 	if v != -1 && ns.generator == 'r' {
@@ -158,6 +164,11 @@ func (ns *noidState) Index(id string) int {
 	return v
 }
 
+// AdvanceTo moves the current position to the position given.
+// The following code indicates the relationship between AdvanceTo, Mint, and Index:
+//	noid.AdvanceTo(5)
+//	id := noid.Mint()
+//	noid.Index(id) == 5	
 func (ns *noidState) AdvanceTo(n int) {
 	if n < 0 || (ns.max >= 0 && n > ns.max) {
 		// out of range. silently ignore

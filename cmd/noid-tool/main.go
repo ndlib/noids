@@ -11,11 +11,11 @@
 //  -i      print information about the given templates
 //  -h      print this help text and exit
 //
-// when the -i option is given, noid-tool will display information about  the
+// When the -i option is given, noid-tool will display information about the
 // given templates to stdout. Otherwise noid-tool will output the sequence
-// number of each noid with respect to the given template. If the noid is
-// invalid, it will have a sequence number of -1. If no noids are given on
-// the command line, noid-tool will take them from stdin, with each noid on its
+// number of each noid with respect to the given template. Invalid noids
+// will have a sequence number of -1. If no noids are given on the command
+// line, noid-tool will take them from stdin, with each noid on its
 // own line.
 package main
 
@@ -52,7 +52,7 @@ Options:
 
 'generate'
     Output the ids associated to each given sequence number.
-    
+
 
 If no ids are given on the command line, they will be taken from stdin,
 with each id on its own line.

@@ -41,6 +41,7 @@ var (
 	InvalidId  = errors.New("Id is invalid for this counter")
 )
 
+// Create a new pool having the given name and template.
 func AddPool(name, template string) (PoolInfo, error) {
 	pi := PoolInfo{
 		Name:     name,
@@ -51,6 +52,7 @@ func AddPool(name, template string) (PoolInfo, error) {
 	return pi, err
 }
 
+// AllPools returns a list of names for every pool in the system.
 func AllPools() []string {
 	pools.RLock()
 	defer pools.RUnlock()
@@ -74,6 +76,8 @@ func lookupPool(name string) (*pool, error) {
 	return p, err
 }
 
+// Get information on the pool named.
+// Returns an error if the given pool could not be found.
 func GetPool(name string) (PoolInfo, error) {
 	result := PoolInfo{Name: name}
 
@@ -99,6 +103,9 @@ func copyPoolInfo(pi *PoolInfo, p *pool) {
 	pi.LastMint = p.lastMint
 }
 
+// Mark the named pool as either open (true) or closed (false).
+// If the pool is empty, a PoolEmpty error is returned and the pool
+// remains closed.
 func SetPoolState(name string, newClosed bool) (PoolInfo, error) {
 	pi := PoolInfo{Name: name}
 	p, err := lookupPool(name)
@@ -121,6 +128,9 @@ func SetPoolState(name string, newClosed bool) (PoolInfo, error) {
 	return pi, nil
 }
 
+// Mint the given number of ids from the pool named.
+// Less ids than requested may be returned if the pool
+// is empty or closed.
 func PoolMint(name string, count int) ([]string, error) {
 	var result []string = make([]string, 0, count)
 	p, err := lookupPool(name)
@@ -153,6 +163,8 @@ func PoolMint(name string, count int) ([]string, error) {
 	return result, nil
 }
 
+// Ensure that pool named will never mint the given id.
+// Returns the updated pool info
 func PoolAdvancePast(name, id string) (PoolInfo, error) {
 	pi := PoolInfo{Name: name}
 	p, err := lookupPool(name)

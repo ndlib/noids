@@ -15,6 +15,10 @@ type PoolSaver interface {
 	LoadAllPools() ([]PoolInfo, error)
 }
 
+// Start a background process to scan for pools which have
+// changed and save them. A channel is returned
+// which allows communication to the process.
+// Commands on the channel are FSave and FForceSave.
 func StartSaver(ps PoolSaver) chan<- int {
 	c := make(chan int, 2)
 	si := saverInfo{
@@ -34,7 +38,6 @@ type saverInfo struct {
 }
 
 /* this currently polls...make saves be requested by the pool handler */
-
 func (si saverInfo) saver() {
 	log.Println("Starting saver")
 	tick := time.NewTicker(time.Duration(si.timeout) * time.Second)
