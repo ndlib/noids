@@ -1,0 +1,25 @@
+{
+	"ImportPath": "github.com/dbrower/noids",
+	"GoVersion": "go1.2.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "708054d61e5a2918b9f4e9700000ee611dcf03f5"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "b08c5fcf14d01cb0c20ddf70157f54d4a2c3a38a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/pat",
+			"Rev": "f2712b46e37909b1a3a95560e3dfacc32ab54d38"
+		},
+		{
+			"ImportPath": "github.com/ogier/pflag",
+			"Rev": "fc2d9a0ef658fa4e4c319939fd6f4b6becfccb48"
+		}
+	]
+}
