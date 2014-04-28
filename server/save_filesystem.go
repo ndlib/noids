@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"path"
 	"regexp"
@@ -18,6 +19,7 @@ func NewJsonFileSaver(dirname string) PoolSaver {
 }
 
 func (d *dirsaver) SavePool(name string, pi PoolInfo) error {
+	log.Println("Save (filesystem)", name)
 	f, err := os.Create(sanitizeName(d.root, name))
 	if err != nil {
 		return err

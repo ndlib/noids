@@ -70,13 +70,18 @@ func main() {
 	logw = NewReopener(logfilename)
 	logw.Reopen()
 	log.Println("-----Starting Server")
+	log.Println("Port:", port)
+	log.Println("Log:", logfilename)
+	log.Println("Storage Dir:", storageDir)
 
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
 	go signalHandler(sig, logw)
 
 	if storageDir != "" {
-		server.StartSaver(server.NewJsonFileSaver(storageDir))
+		fss := server.NewJsonFileSaver(storageDir)
+		server.DefaultSaver = fss
+		server.LoadPoolsFromSaver(fss)
 	}
 	r := pat.New()
 	r.Get("/pools/{poolname}", server.PoolShowHandler)

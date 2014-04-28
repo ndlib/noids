@@ -168,7 +168,7 @@ func (ns *noidState) Index(id string) int {
 // The following code indicates the relationship between AdvanceTo, Mint, and Index:
 //	noid.AdvanceTo(5)
 //	id := noid.Mint()
-//	noid.Index(id) == 5	
+//	noid.Index(id) == 5
 func (ns *noidState) AdvanceTo(n int) {
 	if n < 0 || (ns.max >= 0 && n > ns.max) {
 		// out of range. silently ignore
