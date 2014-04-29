@@ -16,11 +16,6 @@ func TestDbSavePool(t *testing.T) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(dbSchema)
-	if err != nil {
-		t.Log(err)
-		return
-	}
 	ps := NewDbFileSaver(db)
 	err = ps.SavePool("test", PoolInfo{
 		Name:     "test",

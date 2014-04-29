@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -10,6 +11,9 @@ import (
 
 	"github.com/dbrower/noids/server"
 	flag "github.com/ogier/pflag"
+
+	_ "code.google.com/p/go-sqlite/go1/sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Reopener interface {
@@ -54,14 +58,20 @@ func signalHandler(sig <-chan os.Signal, logw Reopener) {
 }
 
 func main() {
-	var port string
-	var storageDir string
-	var logfilename string
-	var logw Reopener
+	var (
+		port          string
+		storageDir    string
+		logfilename   string
+		logw          Reopener
+		sqliteFile    string
+		mysqlLocation string
+	)
 
 	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
 	flag.StringVarP(&logfilename, "log", "l", "", "name of log file")
 	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
+	flag.StringVarP(&sqliteFile, "sqlite", "q", "", "sqlite database file to save noid information")
+	flag.StringVarP(&mysqlLocation, "mysql", "d", "", "MySQL database to save noid information")
 
 	flag.Parse()
 
@@ -71,18 +81,35 @@ func main() {
 	log.Println("-----Starting Server")
 	log.Println(" Port:", port)
 	log.Println(" Log:", logfilename)
-	log.Println(" Storage Dir:", storageDir)
 
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
 	go signalHandler(sig, logw)
 
-	var saver server.PoolSaver
-	if storageDir != "" {
+	var (
+		saver server.PoolSaver
+		db    *sql.DB
+		err   error
+	)
+	switch {
+	case storageDir != "":
+		log.Println("Pool storage is directory", storageDir)
 		saver = server.NewJsonFileSaver(storageDir)
+	case sqliteFile != "":
+		log.Println("Pool storage is sqlite3 database", sqliteFile)
+		db, err = sql.Open("sqlite3", sqliteFile)
+	case mysqlLocation != "":
+		log.Println("Pool storage is MySQL database", mysqlLocation)
+		db, err = sql.Open("mysql", mysqlLocation)
+	}
+	if err != nil {
+		log.Fatalf("Error opening database: %s", err.Error())
+	}
+	if db != nil {
+		saver = server.NewDbFileSaver(db)
 	}
 	server.SetupHandlers(saver)
-	err := http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

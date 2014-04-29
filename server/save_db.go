@@ -10,8 +10,8 @@ type dbSaver struct {
 	DB *sql.DB
 }
 
-const dbSchema = `CREATE TABLE noids (
-name STRING,
+const dbSchema = `CREATE TABLE IF NOT EXISTS noids (
+name STRING PRIMARY KEY,
 template STRING,
 closed BOOLEAN,
 lastmint STRING
@@ -20,14 +20,19 @@ lastmint STRING
 // Create a PoolSaver which will serialize noid pools as
 // records in a SQL database
 func NewDbFileSaver(db *sql.DB) PoolSaver {
-	// see if db works and create table if necessary
+	// create table if necessary
+	_, err := db.Exec(dbSchema)
+	if err != nil {
+		log.Printf("NewDbFileSaver: %s", err.Error())
+		return nil
+	}
 	return &dbSaver{DB: db}
 }
 
 func (d *dbSaver) SavePool(name string, pi PoolInfo) error {
 	log.Println("Save (db)", name)
 	lastmintText, err := pi.LastMint.MarshalText()
-	result, err := d.DB.Exec("UPDATE 'noids' SET 'template' = ?, 'closed' = ?, 'lastmint' = ? WHERE 'name' = ?", pi.Template, pi.Closed, lastmintText, name)
+	result, err := d.DB.Exec("UPDATE noids SET template = ?, closed = ?, lastmint = ? WHERE name = ?", pi.Template, pi.Closed, string(lastmintText), name)
 	if err != nil {
 		return err
 	}
@@ -40,7 +45,8 @@ func (d *dbSaver) SavePool(name string, pi PoolInfo) error {
 	}
 	switch {
 	case nrows == 0:
-		_, err = d.DB.Exec("INSERT INTO noids VALUES (?, ?, ?, ?)", name, pi.Template, pi.Closed, lastmintText)
+		log.Println("Creating new db record for", name)
+		_, err = d.DB.Exec("INSERT INTO noids VALUES (?, ?, ?, ?)", name, pi.Template, pi.Closed, string(lastmintText))
 	case nrows == 1:
 	default:
 		log.Printf("There is more than one row in the database for pool '%s'", name)
