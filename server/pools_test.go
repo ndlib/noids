@@ -5,7 +5,8 @@ import (
 )
 
 func TestEverything(t *testing.T) {
-	pi, err := AddPool("a", "something.seeddee")
+	pg := NewPoolGroup()
+	pi, err := pg.AddPool("a", "something.seeddee")
 	if err != nil {
 		t.Errorf("Got error %v\n", err)
 	}
@@ -17,7 +18,7 @@ func TestEverything(t *testing.T) {
 		t.Errorf("%v does not match expected\n")
 	}
 
-	pools := AllPools()
+	pools := pg.AllPools()
 	if len(pools) != 1 || pools[0] != "a" {
 		t.Errorf("Wrong pool list %v\n", pools)
 	}
@@ -25,7 +26,8 @@ func TestEverything(t *testing.T) {
 }
 
 func TestMint(t *testing.T) {
-	_, err := AddPool("mint", ".sd")
+	pg := NewPoolGroup()
+	_, err := pg.AddPool("mint", ".sd")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 		return
@@ -41,7 +43,7 @@ func TestMint(t *testing.T) {
 		{"mint", 20, []string{}, PoolClosed},
 	}
 	for _, z := range table {
-		result, err := PoolMint(z.pool, z.count)
+		result, err := pg.PoolMint(z.pool, z.count)
 		if err != z.err {
 			t.Errorf("%v\n", err)
 		}

@@ -30,14 +30,13 @@ type pool struct {
 	saver    PoolSaver
 }
 
-type poolNames struct {
+type poolGroup struct {
 	sync.RWMutex
 	table map[string]*pool
 	names []string
 }
 
 var (
-	pools        poolNames = poolNames{table: make(map[string]*pool)}
 	DefaultSaver PoolSaver = NullSaver{}
 
 	NameExists = errors.New("Name already exists")
@@ -47,14 +46,18 @@ var (
 	InvalidId  = errors.New("Id is invalid for this counter")
 )
 
+func NewPoolGroup() *poolGroup {
+	return &poolGroup{table: make(map[string]*pool)}
+}
+
 // Create a new pool having the given name and template.
-func AddPool(name, template string) (PoolInfo, error) {
+func (pg *poolGroup) AddPool(name, template string) (PoolInfo, error) {
 	pi := PoolInfo{
 		Name:     name,
 		Template: template,
 		LastMint: time.Now(),
 	}
-	err := loadFromInfo(&pi)
+	err := pg.loadFromInfo(&pi)
 	if err == nil {
 		err = DefaultSaver.SavePool(name, pi)
 	}
@@ -62,22 +65,22 @@ func AddPool(name, template string) (PoolInfo, error) {
 }
 
 // AllPools returns a list of names for every pool in the system.
-func AllPools() []string {
+func (pg *poolGroup) AllPools() []string {
 	pools.RLock()
 	defer pools.RUnlock()
 
-	result := make([]string, len(pools.names))
-	copy(result, pools.names)
+	result := make([]string, len(pg.names))
+	copy(result, pg.names)
 
 	return result
 }
 
-func lookupPool(name string) (*pool, error) {
+func (pg *poolGroup) lookupPool(name string) (*pool, error) {
 	var err error = nil
 
-	pools.RLock()
-	p := pools.table[name]
-	pools.RUnlock()
+	pg.RLock()
+	p := pg.table[name]
+	pg.RUnlock()
 
 	if p == nil {
 		err = NoSuchPool
@@ -87,10 +90,10 @@ func lookupPool(name string) (*pool, error) {
 
 // Get information on the pool named.
 // Returns an error if the given pool could not be found.
-func GetPool(name string) (PoolInfo, error) {
+func (pg *poolGroup) GetPool(name string) (PoolInfo, error) {
 	result := PoolInfo{Name: name}
 
-	p, err := lookupPool(name)
+	p, err := pg.lookupPool(name)
 	if err != nil {
 		return result, err
 	}
@@ -114,9 +117,9 @@ func copyPoolInfo(pi *PoolInfo, p *pool) {
 // Mark the named pool as either open (false) or closed (false).
 // If the pool is empty, a PoolEmpty error is returned and the pool
 // remains closed.
-func SetPoolState(name string, makeClosed bool) (PoolInfo, error) {
+func (pg *poolGroup) SetPoolState(name string, makeClosed bool) (PoolInfo, error) {
 	pi := PoolInfo{Name: name}
-	p, err := lookupPool(name)
+	p, err := pg.lookupPool(name)
 	if err != nil {
 		return pi, err
 	}
@@ -143,9 +146,9 @@ func SetPoolState(name string, makeClosed bool) (PoolInfo, error) {
 // Mint the given number of ids from the pool named.
 // Less ids than requested may be returned if the pool
 // is empty or closed.
-func PoolMint(name string, count int) ([]string, error) {
+func (pg *poolGroup) PoolMint(name string, count int) ([]string, error) {
 	var result []string = make([]string, 0, count)
-	p, err := lookupPool(name)
+	p, err := pg.lookupPool(name)
 	if err != nil {
 		return result, err
 	}
@@ -171,17 +174,17 @@ func PoolMint(name string, count int) ([]string, error) {
 		p.lastMint = time.Now()
 		pi := PoolInfo{Name: name}
 		copyPoolInfo(&pi, p)
-		p.saver.SavePool(p.name, pi)
+		err = p.saver.SavePool(p.name, pi)
 	}
 
-	return result, nil
+	return result, err
 }
 
 // Ensure that pool named will never mint the given id.
 // Returns the updated pool info
-func PoolAdvancePast(name, id string) (PoolInfo, error) {
+func (pg *poolGroup) PoolAdvancePast(name, id string) (PoolInfo, error) {
 	pi := PoolInfo{Name: name}
-	p, err := lookupPool(name)
+	p, err := pg.lookupPool(name)
 	if err != nil {
 		return pi, err
 	}
@@ -205,17 +208,17 @@ func PoolAdvancePast(name, id string) (PoolInfo, error) {
 
 	copyPoolInfo(&pi, p)
 	if needSave {
-		p.saver.SavePool(p.name, pi)
+		err = p.saver.SavePool(p.name, pi)
 	}
-	return pi, nil
+	return pi, err
 }
 
 // creates a new pool entry using the information in `pi`.
 // updates `pi` with the result (e.g. fix the Used and Max fields)
-func loadFromInfo(pi *PoolInfo) error {
-	pools.Lock()
-	defer pools.Unlock()
-	_, ok := pools.table[pi.Name]
+func (pg *poolGroup) loadFromInfo(pi *PoolInfo) error {
+	pg.Lock()
+	defer pg.Unlock()
+	_, ok := pg.table[pi.Name]
 	if ok {
 		return NameExists
 	}
@@ -233,24 +236,24 @@ func loadFromInfo(pi *PoolInfo) error {
 	// don't technically hold the lock for p, but it hasn't been inserted into pools, yet
 	copyPoolInfo(pi, p)
 	p.empty = pi.Used == pi.Max
-	pools.table[pi.Name] = p
-	pools.names = append(pools.names, pi.Name)
+	pg.table[pi.Name] = p
+	pg.names = append(pg.names, pi.Name)
 	return nil
 }
 
-func LoadPoolsFromSaver(ps PoolSaver) error {
+func (pg *poolGroup) LoadPoolsFromSaver(ps PoolSaver) error {
 	pis, err := ps.LoadAllPools()
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	return LoadPools(pis)
+	return pg.LoadPools(pis)
 }
 
-func LoadPools(pis []PoolInfo) error {
+func (pg *poolGroup) LoadPools(pis []PoolInfo) error {
 	for i := range pis {
 		log.Println("Loading", pis[i].Name)
-		err := loadFromInfo(&pis[i])
+		err := pg.loadFromInfo(&pis[i])
 		if err != nil {
 			log.Println(err)
 			return err

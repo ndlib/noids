@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/dbrower/noids/server"
-	"github.com/gorilla/pat"
 	flag "github.com/ogier/pflag"
 )
 
@@ -70,30 +69,19 @@ func main() {
 	logw = NewReopener(logfilename)
 	logw.Reopen()
 	log.Println("-----Starting Server")
-	log.Println("Port:", port)
-	log.Println("Log:", logfilename)
-	log.Println("Storage Dir:", storageDir)
+	log.Println(" Port:", port)
+	log.Println(" Log:", logfilename)
+	log.Println(" Storage Dir:", storageDir)
 
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
 	go signalHandler(sig, logw)
 
+	var saver server.PoolSaver
 	if storageDir != "" {
-		fss := server.NewJsonFileSaver(storageDir)
-		server.DefaultSaver = fss
-		server.LoadPoolsFromSaver(fss)
+		saver = server.NewJsonFileSaver(storageDir)
 	}
-	r := pat.New()
-	r.Get("/pools/{poolname}", server.PoolShowHandler)
-	r.Put("/pools/{poolname}/open", server.PoolOpenHandler)
-	r.Put("/pools/{poolname}/close", server.PoolCloseHandler)
-	r.Post("/pools/{poolname}/mint", server.MintHandler)
-	r.Post("/pools/{poolname}/advancePast", server.AdvancePastHandler)
-	// r.Get("/stats", StatsHandler)
-	r.Get("/pools", server.PoolsHandler)
-	r.Post("/pools", server.NewPoolHandler)
-
-	http.Handle("/", r)
+	server.SetupHandlers(saver)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
