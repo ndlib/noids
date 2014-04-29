@@ -132,7 +132,7 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 // If s is not nil, then s will be set as the default saver
 // and all the pools will be loaded from s.
 func SetupHandlers(s PoolSaver) {
-	if (s != nil) {
+	if s != nil {
 		DefaultSaver = s
 		err := pools.LoadPoolsFromSaver(s)
 		if err != nil {
