@@ -66,9 +66,15 @@ So now if we were to mint again:
     $ curl -X POST 'http://localhost:8080/pools/abc/mint'
     ["bc3"]
 
+# Using mysql database backend
+
+Use the command line option `--mysql` to store the noid states in a MySQL database.
+The format of the option is `user:password@tcp(hostname:port)/database`.
+
+
 # Security and Authentication
 
-There is none. Perhaps later?
+There is none.
 
 # TODO
 

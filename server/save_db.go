@@ -11,10 +11,10 @@ type dbSaver struct {
 }
 
 const dbSchema = `CREATE TABLE IF NOT EXISTS noids (
-name STRING PRIMARY KEY,
-template STRING,
+name VARCHAR(255) PRIMARY KEY,
+template VARCHAR(255),
 closed BOOLEAN,
-lastmint STRING
+lastmint VARCHAR(64)
 );`
 
 // Create a PoolSaver which will serialize noid pools as
