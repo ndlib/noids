@@ -1,0 +1,20 @@
+# TODO
+
+Last revised 2014-4-29.
+
+[X] add a database backend to store noid state
+[ ] add support for config files. Mainly to store database credentials and simplify writing of init scripts.
+[X] change noid service to guarantee no duplicates. (Currently, state is flushed to disk every 5 seconds).
+[ ] Add `-version` command line switch
+[ ] create a log rotate config for spec file and decide on a default log place /opt/noids/log/...
+[ ] create an upstart config for spec file
+[ ] should rpm put file at /opt/noids to satisfy our local procedures.
+    /opt/noids/1.0.1/bin/...
+    /opt/noids/current -> /opt/noids/1.0.1
+    /opt/noids/log/...
+    /opt/noids/config
+    /opt/noids/pools/...
+[ ] Get default port from Mark (13000)
+[ ] Choose a default storage directory /opt/noids/pools/...
+[ ] Tag versions in github.
+
