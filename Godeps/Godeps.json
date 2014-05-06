@@ -6,6 +6,16 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/go-sqlite/go1/sqlite3",
+			"Comment": "null-50",
+			"Rev": "6e75c20f8fc4b936bccab88336915333ae165754"
+		},
+		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "go1",
+			"Rev": "9a7aa3606b82e2081a13a008ada88dfdb96c20fd"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
 			"Rev": "708054d61e5a2918b9f4e9700000ee611dcf03f5"
 		},
@@ -16,10 +26,6 @@
 		{
 			"ImportPath": "github.com/gorilla/pat",
 			"Rev": "f2712b46e37909b1a3a95560e3dfacc32ab54d38"
-		},
-		{
-			"ImportPath": "github.com/ogier/pflag",
-			"Rev": "fc2d9a0ef658fa4e4c319939fd6f4b6becfccb48"
 		}
 	]
 }
