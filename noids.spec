@@ -4,7 +4,7 @@
 %global __strip	/bin/true
 
 Name:		noids
-Version:	1
+Version:	0.0.0
 Release:	1%{?dist}
 Summary:	Noids identifier server
 
@@ -14,11 +14,11 @@ License:	Apache
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Url:		https://github.com/dbrower/noids
-Source:		https://github.com/dbrower/noids/archive/noids-capify-%{version}.zip
+Source:		https://github.com/dbrower/noids/archive/noids-master-%{version}.zip
 
 BuildRequires:	golang >= 1.2-7
 # the remainder are local packages
-BuildRequires:	godep
+#BuildRequires:	godep
 
 Provides:	noids = %{version}
 
@@ -30,7 +30,7 @@ NOID gem and Hydra based applications. It can be either file
 or database backed.
 
 %prep
-%setup -q -n noids-capify
+%setup -q -n noids-master
 mkdir _build
 pushd _build
   mkdir -p src/github.com/dbrower
@@ -38,19 +38,27 @@ pushd _build
 popd
 
 %build
-export GOPATH=$(pwd)/_build:%{gopath}
-godep go build cmd/noids/main.go
+export GOPATH=$(pwd)/_build:$(pwd)/Godeps/_workspace:%{gopath}
+go build
+pushd cmd/noid-tool
+  go build
+popd
 
 
 %install
 install -d %{buildroot}%{_bindir}
-install -p -m 755 main %{buildroot}%{_bindir}/noids
+install -d %{buildroot}/opt/noids
+install -d %{buildroot}/opt/noids/bin
+install -d %{buildroot}/opt/noids/log
+install -d %{buildroot}/opt/noids/pools
+install -p -m 755 noids-master %{buildroot}/opt/noids/bin/noids
+install -p -m 755 cmd/noid-tool/noid-tool %{buildroot}%{_bindir}/noid-tool
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/noids
-#%doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
-#%doc LICENSE-vim-syntax README-vim-syntax.md
+/opt/noids/
+%{_bindir}/noid-tool
+#%doc README.md
 #%{_mandir}/man1/docker.1.gz
 #%config(noreplace) %{_sysconfdir}/noids
 #%{_initddir}/docker
