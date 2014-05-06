@@ -78,5 +78,4 @@ There is none.
 
 # TODO
 
-* Convert the saver to be demand driven rather than polling
 * Standardize the naming: a noid _counter_ belongs to a _pool_, etc.
