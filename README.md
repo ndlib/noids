@@ -31,44 +31,50 @@ On my Mac I use homebrew:
 3. Run the server:
 
         mkdir ~/noid_pool
-        $GOPATH/bin/noids -s ~/noid_pool
+        $GOPATH/bin/noids --storage ~/noid_pool
 
 # Using the API
 
 Get a list of current noid counters:
 
-    $ curl http://localhost:8080/pools
+    $ curl http://localhost:13001/pools
     [ ]
 
 Add a new noid counter:
 
-    $ curl -X POST 'http://localhost:8080/pools?name=abc&template=.seek'
+    $ curl -X POST 'http://localhost:13001/pools?name=abc&template=.seek'
     {"Name":"abc","Template":".seek+0","Used":0,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:37:14.271254-05:00"}
 
 Mint some identifiers:
 
-    $ curl -X POST 'http://localhost:8080/pools/abc/mint?n=11'
+    $ curl -X POST 'http://localhost:13001/pools/abc/mint?n=11'
     ["000","012","024","036","048","05b","06d","07g","08j","09m","0bp"]
 
 Get noid information:
 
-    $ curl http://localhost:8080/pools/abc
+    $ curl http://localhost:13001/pools/abc
     {"Name":"abc","Template":".seek+11","Used":11,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:40:50.657972456-05:00"}
 
 To help sync the minter with ids which have already been minted, use the AdvancePast route.
 Calling this with an id will ensure that id will never be minted by this server.
 
-    $ curl -X POST 'http://localhost:8080/pools/abc/advancePast?id=bb1'
+    $ curl -X POST 'http://localhost:13001/pools/abc/advancePast?id=bb1'
     {"Name":"abc","Template":".seek+301","Used":301,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:43:53.049369916-05:00"}
 
 So now if we were to mint again:
 
-    $ curl -X POST 'http://localhost:8080/pools/abc/mint'
+    $ curl -X POST 'http://localhost:13001/pools/abc/mint'
     ["bc3"]
+
+# Using mysql database backend
+
+Use the command line option `--mysql` to store the noid states in a MySQL database.
+The format of the option is `user:password@tcp(hostname:port)/database`.
+
 
 # Security and Authentication
 
-There is none. Perhaps later?
+There is none.
 
 # TODO
 

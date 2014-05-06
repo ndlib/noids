@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"flag"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -9,8 +11,9 @@ import (
 	"syscall"
 
 	"github.com/dbrower/noids/server"
-	"github.com/gorilla/pat"
-	flag "github.com/ogier/pflag"
+
+	_ "code.google.com/p/go-sqlite/go1/sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Reopener interface {
@@ -55,14 +58,20 @@ func signalHandler(sig <-chan os.Signal, logw Reopener) {
 }
 
 func main() {
-	var port string
-	var storageDir string
-	var logfilename string
-	var logw Reopener
+	var (
+		port          string
+		storageDir    string
+		logfilename   string
+		logw          Reopener
+		sqliteFile    string
+		mysqlLocation string
+	)
 
-	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
-	flag.StringVarP(&logfilename, "log", "l", "", "name of log file")
-	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
+	flag.StringVar(&port, "port", "13001", "port to run on")
+	flag.StringVar(&logfilename, "log", "", "name of log file")
+	flag.StringVar(&storageDir, "storage", "", "directory to save noid information")
+	flag.StringVar(&sqliteFile, "sqlite", "", "sqlite database file to save noid information")
+	flag.StringVar(&mysqlLocation, "mysql", "", "MySQL database to save noid information")
 
 	flag.Parse()
 
@@ -70,26 +79,37 @@ func main() {
 	logw = NewReopener(logfilename)
 	logw.Reopen()
 	log.Println("-----Starting Server")
+	log.Println(" Port:", port)
+	log.Println(" Log:", logfilename)
 
 	sig := make(chan os.Signal, 5)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGUSR1, syscall.SIGUSR2)
 	go signalHandler(sig, logw)
 
-	if storageDir != "" {
-		server.StartSaver(server.NewJsonFileSaver(storageDir))
+	var (
+		saver server.PoolSaver
+		db    *sql.DB
+		err   error
+	)
+	switch {
+	case storageDir != "":
+		log.Println("Pool storage is directory", storageDir)
+		saver = server.NewJsonFileSaver(storageDir)
+	case sqliteFile != "":
+		log.Println("Pool storage is sqlite3 database", sqliteFile)
+		db, err = sql.Open("sqlite3", sqliteFile)
+	case mysqlLocation != "":
+		log.Println("Pool storage is MySQL database", mysqlLocation)
+		db, err = sql.Open("mysql", mysqlLocation)
 	}
-	r := pat.New()
-	r.Get("/pools/{poolname}", server.PoolShowHandler)
-	r.Put("/pools/{poolname}/open", server.PoolOpenHandler)
-	r.Put("/pools/{poolname}/close", server.PoolCloseHandler)
-	r.Post("/pools/{poolname}/mint", server.MintHandler)
-	r.Post("/pools/{poolname}/advancePast", server.AdvancePastHandler)
-	// r.Get("/stats", StatsHandler)
-	r.Get("/pools", server.PoolsHandler)
-	r.Post("/pools", server.NewPoolHandler)
-
-	http.Handle("/", r)
-	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatalf("Error opening database: %s", err.Error())
+	}
+	if db != nil {
+		saver = server.NewDbFileSaver(db)
+	}
+	server.SetupHandlers(saver)
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

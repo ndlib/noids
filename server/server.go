@@ -5,13 +5,19 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/pat"
+)
+
+var (
+	pools *poolGroup = NewPoolGroup()
 )
 
 // Implements the Noid server API
 
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RequestURI)
-	names := AllPools()
+	names := pools.AllPools()
 	enc := json.NewEncoder(w)
 	enc.Encode(names)
 }
@@ -24,7 +30,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing arguments", 400)
 		return
 	}
-	pi, err := AddPool(name, template)
+	pi, err := pools.AddPool(name, template)
 	if err != nil {
 		if err == NameExists {
 			http.Error(w, "name already exists", 409)
@@ -41,7 +47,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RequestURI)
 	name := r.FormValue(":poolname")
-	pi, err := GetPool(name)
+	pi, err := pools.GetPool(name)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -62,7 +68,7 @@ func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
 func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 	log.Println(r.RequestURI)
 	name := r.FormValue(":poolname")
-	pi, err := SetPoolState(name, makeClosed)
+	pi, err := pools.SetPoolState(name, makeClosed)
 	if err != nil {
 		http.Error(w, err.Error(), 403)
 		return
@@ -91,7 +97,7 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ids, err := PoolMint(name, count)
+	ids, err := pools.PoolMint(name, count)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -112,7 +118,7 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pi, err := PoolAdvancePast(name, id)
+	pi, err := pools.PoolAdvancePast(name, id)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -120,4 +126,28 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
+}
+
+// SetupHandlers adds the routes to the global http route table.
+// If s is not nil, then s will be set as the default saver
+// and all the pools will be loaded from s.
+func SetupHandlers(s PoolSaver) {
+	if s != nil {
+		DefaultSaver = s
+		err := pools.LoadPoolsFromSaver(s)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	r := pat.New()
+	r.Get("/pools/{poolname}", PoolShowHandler)
+	r.Put("/pools/{poolname}/open", PoolOpenHandler)
+	r.Put("/pools/{poolname}/close", PoolCloseHandler)
+	r.Post("/pools/{poolname}/mint", MintHandler)
+	r.Post("/pools/{poolname}/advancePast", AdvancePastHandler)
+	// r.Get("/stats", StatsHandler)
+	r.Get("/pools", PoolsHandler)
+	r.Post("/pools", NewPoolHandler)
+
+	http.Handle("/", r)
 }
