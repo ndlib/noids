@@ -67,7 +67,7 @@ func main() {
 		mysqlLocation string
 	)
 
-	flag.StringVar(&port, "port", "8080", "port to run on")
+	flag.StringVar(&port, "port", "13001", "port to run on")
 	flag.StringVar(&logfilename, "log", "", "name of log file")
 	flag.StringVar(&storageDir, "storage", "", "directory to save noid information")
 	flag.StringVar(&sqliteFile, "sqlite", "", "sqlite database file to save noid information")
