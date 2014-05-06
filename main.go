@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -10,7 +11,6 @@ import (
 	"syscall"
 
 	"github.com/dbrower/noids/server"
-	flag "github.com/ogier/pflag"
 
 	_ "code.google.com/p/go-sqlite/go1/sqlite3"
 	_ "github.com/go-sql-driver/mysql"
@@ -67,11 +67,11 @@ func main() {
 		mysqlLocation string
 	)
 
-	flag.StringVarP(&port, "port", "p", "8080", "port to run on")
-	flag.StringVarP(&logfilename, "log", "l", "", "name of log file")
-	flag.StringVarP(&storageDir, "storage", "s", "", "directory to save noid information")
-	flag.StringVarP(&sqliteFile, "sqlite", "q", "", "sqlite database file to save noid information")
-	flag.StringVarP(&mysqlLocation, "mysql", "d", "", "MySQL database to save noid information")
+	flag.StringVar(&port, "port", "8080", "port to run on")
+	flag.StringVar(&logfilename, "log", "", "name of log file")
+	flag.StringVar(&storageDir, "storage", "", "directory to save noid information")
+	flag.StringVar(&sqliteFile, "sqlite", "", "sqlite database file to save noid information")
+	flag.StringVar(&mysqlLocation, "mysql", "", "MySQL database to save noid information")
 
 	flag.Parse()
 

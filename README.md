@@ -31,7 +31,7 @@ On my Mac I use homebrew:
 3. Run the server:
 
         mkdir ~/noid_pool
-        $GOPATH/bin/noids -s ~/noid_pool
+        $GOPATH/bin/noids --storage ~/noid_pool
 
 # Using the API
 
