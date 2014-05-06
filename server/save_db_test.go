@@ -16,7 +16,7 @@ func TestDbSavePool(t *testing.T) {
 	}
 	defer db.Close()
 
-	ps := NewDbFileSaver(db)
+	ps := NewDbFileStore(db)
 	err = ps.SavePool("test", PoolInfo{
 		Name:     "test",
 		Template: ".zd+0",

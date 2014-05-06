@@ -8,17 +8,17 @@ import (
 	"regexp"
 )
 
-type dirsaver struct {
+type dirstore struct {
 	root string
 }
 
-// Create a PoolSaver which will serialize noid pools as
+// Create a PoolStore which will serialize noid pools as
 // json files in a directory.
-func NewJsonFileSaver(dirname string) PoolSaver {
-	return &dirsaver{root: dirname}
+func NewJsonFileStore(dirname string) PoolStore {
+	return &dirstore{root: dirname}
 }
 
-func (d *dirsaver) SavePool(name string, pi PoolInfo) error {
+func (d *dirstore) SavePool(name string, pi PoolInfo) error {
 	log.Println("Save (filesystem)", name)
 	f, err := os.Create(sanitizeName(d.root, name))
 	if err != nil {
@@ -32,7 +32,7 @@ func (d *dirsaver) SavePool(name string, pi PoolInfo) error {
 	return nil
 }
 
-func (d *dirsaver) LoadAllPools() ([]PoolInfo, error) {
+func (d *dirstore) LoadAllPools() ([]PoolInfo, error) {
 	var pis []PoolInfo
 	f, err := os.Open(d.root)
 	if err != nil {
@@ -54,7 +54,7 @@ func (d *dirsaver) LoadAllPools() ([]PoolInfo, error) {
 	return pis, nil
 }
 
-func (d *dirsaver) loadpool(filename string) (PoolInfo, error) {
+func (d *dirstore) loadpool(filename string) (PoolInfo, error) {
 	var pi PoolInfo
 	f, err := os.Open(sanitizeName(d.root, filename))
 	if err != nil {

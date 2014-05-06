@@ -129,12 +129,12 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetupHandlers adds the routes to the global http route table.
-// If s is not nil, then s will be set as the default saver
+// If s is not nil, then s will be set as the default store
 // and all the pools will be loaded from s.
-func SetupHandlers(s PoolSaver) {
+func SetupHandlers(s PoolStore) {
 	if s != nil {
-		DefaultSaver = s
-		err := pools.LoadPoolsFromSaver(s)
+		DefaultStore = s
+		err := pools.LoadPoolsFromStore(s)
 		if err != nil {
 			log.Fatal(err)
 		}

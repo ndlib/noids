@@ -134,14 +134,14 @@ func main() {
 	go signalHandler(sig, logw)
 
 	var (
-		saver server.PoolSaver
+		store server.PoolStore
 		db    *sql.DB
 		err   error
 	)
 	switch {
 	case storageDir != "":
 		log.Println("Pool storage is directory", storageDir)
-		saver = server.NewJsonFileSaver(storageDir)
+		store = server.NewJsonFileStore(storageDir)
 	case sqliteFile != "":
 		log.Println("Pool storage is sqlite3 database", sqliteFile)
 		db, err = sql.Open("sqlite3", sqliteFile)
@@ -153,9 +153,9 @@ func main() {
 		log.Fatalf("Error opening database: %s", err.Error())
 	}
 	if db != nil {
-		saver = server.NewDbFileSaver(db)
+		store = server.NewDbFileStore(db)
 	}
-	server.SetupHandlers(saver)
+	server.SetupHandlers(store)
 	log.Println("Listening on port", port)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {

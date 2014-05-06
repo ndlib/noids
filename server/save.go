@@ -1,7 +1,7 @@
 package server
 
-// PoolSaver provides a way to change the storage backend.
-type PoolSaver interface {
+// PoolStore provides a way to change the storage backend.
+type PoolStore interface {
 	// SavePool takes a PoolInfo structure and saves it somehow.
 	// Returns an error if there was an error saving.
 	// While for any given `name`, at most one request will be made

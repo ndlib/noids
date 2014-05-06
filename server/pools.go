@@ -27,7 +27,7 @@ type pool struct {
 	empty    bool
 	lastMint time.Time
 	name     string
-	saver    PoolSaver
+	store    PoolStore
 }
 
 type poolGroup struct {
@@ -37,7 +37,7 @@ type poolGroup struct {
 }
 
 var (
-	DefaultSaver PoolSaver = NullSaver{}
+	DefaultStore PoolStore = NullStore{}
 
 	NameExists = errors.New("Name already exists")
 	NoSuchPool = errors.New("Pool could not be found")
@@ -59,7 +59,7 @@ func (pg *poolGroup) AddPool(name, template string) (PoolInfo, error) {
 	}
 	err := pg.loadFromInfo(&pi)
 	if err == nil {
-		err = DefaultSaver.SavePool(name, pi)
+		err = DefaultStore.SavePool(name, pi)
 	}
 	return pi, err
 }
@@ -138,7 +138,7 @@ func (pg *poolGroup) SetPoolState(name string, makeClosed bool) (PoolInfo, error
 	}
 	copyPoolInfo(&pi, p)
 	if needSave {
-		p.saver.SavePool(p.name, pi)
+		p.store.SavePool(p.name, pi)
 	}
 	return pi, nil
 }
@@ -174,7 +174,7 @@ func (pg *poolGroup) PoolMint(name string, count int) ([]string, error) {
 		p.lastMint = time.Now()
 		pi := PoolInfo{Name: name}
 		copyPoolInfo(&pi, p)
-		err = p.saver.SavePool(p.name, pi)
+		err = p.store.SavePool(p.name, pi)
 	}
 
 	return result, err
@@ -208,7 +208,7 @@ func (pg *poolGroup) PoolAdvancePast(name, id string) (PoolInfo, error) {
 
 	copyPoolInfo(&pi, p)
 	if needSave {
-		err = p.saver.SavePool(p.name, pi)
+		err = p.store.SavePool(p.name, pi)
 	}
 	return pi, err
 }
@@ -231,7 +231,7 @@ func (pg *poolGroup) loadFromInfo(pi *PoolInfo) error {
 		name:     pi.Name,
 		closed:   pi.Closed,
 		lastMint: pi.LastMint,
-		saver:    DefaultSaver,
+		store:    DefaultStore,
 	}
 	// don't technically hold the lock for p, but it hasn't been inserted into pools, yet
 	copyPoolInfo(pi, p)
@@ -241,7 +241,7 @@ func (pg *poolGroup) loadFromInfo(pi *PoolInfo) error {
 	return nil
 }
 
-func (pg *poolGroup) LoadPoolsFromSaver(ps PoolSaver) error {
+func (pg *poolGroup) LoadPoolsFromStore(ps PoolStore) error {
 	pis, err := ps.LoadAllPools()
 	if err != nil {
 		log.Fatal(err)

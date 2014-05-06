@@ -2,14 +2,14 @@ package server
 
 import "log"
 
-type NullSaver struct{}
+type NullStore struct{}
 
-func (ns NullSaver) SavePool(name string, pi PoolInfo) error {
+func (ns NullStore) SavePool(name string, pi PoolInfo) error {
 	log.Println("Save (null)", name)
 	return nil
 }
 
-func (ns NullSaver) LoadAllPools() ([]PoolInfo, error) {
+func (ns NullStore) LoadAllPools() ([]PoolInfo, error) {
 	var pi []PoolInfo
 	return pi, nil
 }

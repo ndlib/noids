@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type dbSaver struct {
+type dbStore struct {
 	DB *sql.DB
 }
 
@@ -17,19 +17,19 @@ closed BOOLEAN,
 lastmint VARCHAR(64)
 );`
 
-// Create a PoolSaver which will serialize noid pools as
+// Create a PoolStore which will serialize noid pools as
 // records in a SQL database
-func NewDbFileSaver(db *sql.DB) PoolSaver {
+func NewDbFileStore(db *sql.DB) PoolStore {
 	// create table if necessary
 	_, err := db.Exec(dbSchema)
 	if err != nil {
-		log.Printf("NewDbFileSaver: %s", err.Error())
+		log.Printf("NewDbFileStore: %s", err.Error())
 		return nil
 	}
-	return &dbSaver{DB: db}
+	return &dbStore{DB: db}
 }
 
-func (d *dbSaver) SavePool(name string, pi PoolInfo) error {
+func (d *dbStore) SavePool(name string, pi PoolInfo) error {
 	log.Println("Save (db)", name)
 	lastmintText, err := pi.LastMint.MarshalText()
 	result, err := d.DB.Exec("UPDATE noids SET template = ?, closed = ?, lastmint = ? WHERE name = ?", pi.Template, pi.Closed, string(lastmintText), name)
@@ -56,7 +56,7 @@ func (d *dbSaver) SavePool(name string, pi PoolInfo) error {
 	return err
 }
 
-func (d *dbSaver) LoadAllPools() ([]PoolInfo, error) {
+func (d *dbStore) LoadAllPools() ([]PoolInfo, error) {
 	var pis []PoolInfo
 
 	rows, err := d.DB.Query("SELECT name, template, closed, lastmint FROM noids")
