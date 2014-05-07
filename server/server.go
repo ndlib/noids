@@ -16,14 +16,14 @@ var (
 // Implements the Noid server API
 
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 	names := pools.AllPools()
 	enc := json.NewEncoder(w)
 	enc.Encode(names)
 }
 
 func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 	name := r.FormValue("name")
 	template := r.FormValue("template")
 	if name == "" || template == "" {
@@ -45,7 +45,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 	name := r.FormValue(":poolname")
 	pi, err := pools.GetPool(name)
 	if err != nil {
@@ -66,7 +66,7 @@ func PoolCloseHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 	name := r.FormValue(":poolname")
 	pi, err := pools.SetPoolState(name, makeClosed)
 	if err != nil {
@@ -78,7 +78,7 @@ func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 }
 
 func MintHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 	var count int = 1
 	var err error
 
@@ -108,7 +108,7 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	logRequest(r)
 
 	name := r.FormValue(":poolname")
 	id := r.FormValue("id")
@@ -126,6 +126,10 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
+}
+
+func logRequest(r *http.Request) {
+	log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
 }
 
 // SetupHandlers adds the routes to the global http route table.
