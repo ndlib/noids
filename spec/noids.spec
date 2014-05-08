@@ -53,11 +53,15 @@ install -d %{buildroot}/opt/noids/log
 install -d %{buildroot}/opt/noids/pools
 install -p -m 755 noids-master %{buildroot}/opt/noids/bin/noids
 install -p -m 755 cmd/noid-tool/noid-tool %{buildroot}%{_bindir}/noid-tool
+install -p -m 644 spec/noids.logrotate %{buildroot}/etc/logrotate.d/noids
+install -p -m 644 spec/noids.conf %{buildroot}/etc/init/noids.conf
 
 %files
 %defattr(-,root,root,-)
 /opt/noids/
 %{_bindir}/noid-tool
+/etc/logrotate.d/noids
+/etc/init/noids.conf
 #%doc README.md
 #%{_mandir}/man1/docker.1.gz
 #%config(noreplace) %{_sysconfdir}/noids
