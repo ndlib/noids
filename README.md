@@ -76,6 +76,3 @@ The format of the option is `user:password@tcp(hostname:port)/database`.
 
 There is none.
 
-# TODO
-
-* Standardize the naming: a noid _counter_ belongs to a _pool_, etc.
