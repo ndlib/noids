@@ -79,7 +79,8 @@ func writePID(fname string) {
 
 type Config struct {
 	General struct {
-		Port string
+		Port       string
+		StorageDir string
 	}
 	Mysql struct {
 		User     string
@@ -138,6 +139,9 @@ func main() {
 			if config.General.Port != "" {
 				port = config.General.Port
 			}
+			if config.General.StorageDir != "" {
+				storageDir = config.General.StorageDir
+			}
 			if config.Mysql.Database != "" {
 				mysqlLocation = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 					config.Mysql.User,
@@ -147,10 +151,6 @@ func main() {
 					config.Mysql.Database)
 			}
 		}
-	}
-
-	if pidfilename != "" {
-		writePID(pidfilename)
 	}
 
 	sig := make(chan os.Signal, 5)
@@ -180,9 +180,16 @@ func main() {
 		store = server.NewDbFileStore(db)
 	}
 	server.SetupHandlers(store)
+	if pidfilename != "" {
+		writePID(pidfilename)
+	}
 	log.Println("Listening on port", port)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
+	}
+	if pidfilename != "" {
+		// we don't care if there is an error
+		os.Remove(pidfilename)
 	}
 }
