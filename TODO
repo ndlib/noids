@@ -1,6 +1,6 @@
 # TODO
 
-Last revised 2014-5-6.
+Last revised 2014-5-8.
 
 [X] add a database backend to store noid state
 [X] add support for config files. Mainly to store database credentials and simplify writing of init scripts.
@@ -15,6 +15,9 @@ Last revised 2014-5-6.
     /opt/noids/config
     /opt/noids/pools/...
 [X] Get default port from Mark (13001)
-[ ] Choose a default storage directory /opt/noids/pools/...
+[X] Choose a default storage directory /opt/noids/pools/...
 [ ] Tag versions in github.
+[ ] Standardize the naming: a noid _counter_ belongs to a _pool_, etc. (this may already be done...)
+[ ] Look at https://github.com/rcrowley/go-tigertonic for better (?) logging, metrics,
+[ ] Add an information page in server to return the version, response times, and counts of error codes
 
