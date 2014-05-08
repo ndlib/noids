@@ -57,9 +57,24 @@ func signalHandler(sig <-chan os.Signal, logw Reopener) {
 			logw.Reopen()
 		case syscall.SIGINT, syscall.SIGTERM:
 			log.Println("Exiting")
+			if pidfilename != "" {
+				// we don't care if there is an error
+				os.Remove(pidfilename)
+			}
 			os.Exit(1)
 		}
 	}
+}
+
+func writePID(fname string) {
+	f, err := os.Create(fname)
+	if err != nil {
+		log.Printf("Error writing PID to file '%s': %s\n", fname, err.Error())
+		return
+	}
+	pid := os.Getpid()
+	fmt.Fprintf(f, "%d", pid)
+	f.Close()
 }
 
 type Config struct {
@@ -74,6 +89,10 @@ type Config struct {
 		Database string
 	}
 }
+
+var (
+	pidfilename string
+)
 
 func main() {
 	var (
@@ -95,6 +114,7 @@ func main() {
 	flag.StringVar(&mysqlLocation, "mysql", "", "MySQL database to save noid information")
 	flag.BoolVar(&showVersion, "version", false, "Display binary version")
 	flag.StringVar(&configFile, "config", "", "config file to use")
+	flag.StringVar(&pidfilename, "pid", "", "file to store pid of server")
 
 	flag.Parse()
 
@@ -127,6 +147,10 @@ func main() {
 					config.Mysql.Database)
 			}
 		}
+	}
+
+	if pidfilename != "" {
+		writePID(pidfilename)
 	}
 
 	sig := make(chan os.Signal, 5)
