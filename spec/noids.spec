@@ -14,7 +14,7 @@ License:	Apache
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Url:		https://github.com/dbrower/noids
-Source:		https://github.com/dbrower/noids/archive/noids-master-%{version}.zip
+Source:		https://github.com/dbrower/noids/archive/v%{version}.zip
 
 BuildRequires:	golang >= 1.2-7
 # the remainder are local packages
@@ -30,7 +30,7 @@ NOID gem and Hydra based applications. It can be either file
 or database backed.
 
 %prep
-%setup -q -n noids-master
+%setup -q -n noids-%{version}
 mkdir _build
 pushd _build
   mkdir -p src/github.com/dbrower
@@ -39,9 +39,9 @@ popd
 
 %build
 export GOPATH=$(pwd)/_build:$(pwd)/Godeps/_workspace:%{gopath}
-go build
+go build -o noids
 pushd cmd/noid-tool
-  go build
+  go build -o noid-tool
 popd
 
 
@@ -51,10 +51,10 @@ install -d %{buildroot}/opt/noids
 install -d %{buildroot}/opt/noids/bin
 install -d %{buildroot}/opt/noids/log
 install -d %{buildroot}/opt/noids/pools
-install -p -m 755 noids-master %{buildroot}/opt/noids/bin/noids
+install -p -m 755 noids %{buildroot}/opt/noids/bin/noids
 install -p -m 755 cmd/noid-tool/noid-tool %{buildroot}%{_bindir}/noid-tool
-install -p -m 644 spec/noids.logrotate %{buildroot}/etc/logrotate.d/noids
-install -p -m 644 spec/noids.conf %{buildroot}/etc/init/noids.conf
+install -D -p -m 644 spec/noids.logrotate %{buildroot}/etc/logrotate.d/noids
+install -D -p -m 644 spec/noids.conf %{buildroot}/etc/init/noids.conf
 
 %files
 %defattr(-,root,root,-)
