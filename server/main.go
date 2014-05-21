@@ -14,8 +14,6 @@ import (
 	"code.google.com/p/gcfg"
 	_ "code.google.com/p/go-sqlite/go1/sqlite3"
 	_ "github.com/go-sql-driver/mysql"
-
-	"github.com/dbrower/noids/server"
 )
 
 type Reopener interface {
@@ -158,14 +156,14 @@ func main() {
 	go signalHandler(sig, logw)
 
 	var (
-		store server.PoolStore
+		store PoolStore
 		db    *sql.DB
 		err   error
 	)
 	switch {
 	case storageDir != "":
 		log.Println("Pool storage is directory", storageDir)
-		store = server.NewJsonFileStore(storageDir)
+		store = NewJsonFileStore(storageDir)
 	case sqliteFile != "":
 		log.Println("Pool storage is sqlite3 database", sqliteFile)
 		db, err = sql.Open("sqlite3", sqliteFile)
@@ -177,9 +175,9 @@ func main() {
 		log.Fatalf("Error opening database: %s", err.Error())
 	}
 	if db != nil {
-		store = server.NewDbFileStore(db)
+		store = NewDbFileStore(db)
 	}
-	server.SetupHandlers(store)
+	SetupHandlers(store)
 	if pidfilename != "" {
 		writePID(pidfilename)
 	}

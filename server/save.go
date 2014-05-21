@@ -1,4 +1,4 @@
-package server
+package main
 
 // PoolStore provides a way to change the storage backend.
 type PoolStore interface {

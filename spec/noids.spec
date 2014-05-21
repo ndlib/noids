@@ -39,10 +39,7 @@ popd
 
 %build
 export GOPATH=$(pwd)/_build:$(pwd)/Godeps/_workspace:%{gopath}
-go build -o noids
-pushd cmd/noid-tool
-  go build -o noid-tool
-popd
+make
 
 
 %install
@@ -52,7 +49,7 @@ install -d %{buildroot}/opt/noids/bin
 install -d %{buildroot}/opt/noids/log
 install -d %{buildroot}/opt/noids/pools
 install -p -m 755 noids %{buildroot}/opt/noids/bin/noids
-install -p -m 755 cmd/noid-tool/noid-tool %{buildroot}%{_bindir}/noid-tool
+install -p -m 755 noid-tool/noid-tool %{buildroot}%{_bindir}/noid-tool
 install -D -p -m 644 spec/noids.logrotate %{buildroot}/etc/logrotate.d/noids
 install -D -p -m 644 spec/noids.conf %{buildroot}/etc/init/noids.conf
 install -D -p -m 644 settings.ini %{buildroot}/opt/noids/config.ini
