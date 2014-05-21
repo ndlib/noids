@@ -128,6 +128,20 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 	enc.Encode(pi)
 }
 
+// For now the stats provided are meager
+type stats struct {
+	Version string
+}
+
+func StatsHandler(w http.ResponseWriter, r *http.Request) {
+	logRequest(r)
+	s := stats{
+		Version: version,
+	}
+	enc := json.NewEncoder(w)
+	enc.Encode(s)
+}
+
 func logRequest(r *http.Request) {
 	log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
 }
@@ -149,7 +163,7 @@ func SetupHandlers(s PoolStore) {
 	r.Put("/pools/{poolname}/close", PoolCloseHandler)
 	r.Post("/pools/{poolname}/mint", MintHandler)
 	r.Post("/pools/{poolname}/advancePast", AdvancePastHandler)
-	// r.Get("/stats", StatsHandler)
+	r.Get("/stats", StatsHandler)
 	r.Get("/pools", PoolsHandler)
 	r.Post("/pools", NewPoolHandler)
 
