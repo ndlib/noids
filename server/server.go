@@ -49,7 +49,8 @@ func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue(":poolname")
 	pi, err := pools.GetPool(name)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		// most likely the error is that the pool name doesn't exist
+		http.Error(w, err.Error(), 404)
 		return
 	}
 
