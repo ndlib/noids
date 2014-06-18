@@ -12,7 +12,7 @@ how the [Ruby Noid][] gem works.
 
 # Installation
 
-1. Install the [Go][] development environment. It is easiest to use a package manager.
+1. Install a [Go][] development environment. It is easiest to use a package manager.
 On my Mac I use homebrew:
 
         brew install go
@@ -42,12 +42,12 @@ Get a list of current noid counters:
 
 Add a new noid counter:
 
-    $ curl -X POST 'http://localhost:13001/pools?name=abc&template=.seek'
+    $ curl http://localhost:13001/pools -F name=abc -F template=.seek
     {"Name":"abc","Template":".seek+0","Used":0,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:37:14.271254-05:00"}
 
 Mint some identifiers:
 
-    $ curl -X POST 'http://localhost:13001/pools/abc/mint?n=11'
+    $ curl http://localhost:13001/pools/abc/mint -F n=11
     ["000","012","024","036","048","05b","06d","07g","08j","09m","0bp"]
 
 Get noid information:
@@ -58,12 +58,12 @@ Get noid information:
 To help sync the minter with ids which have already been minted, use the AdvancePast route.
 Calling this with an id will ensure that id will never be minted by this server.
 
-    $ curl -X POST 'http://localhost:13001/pools/abc/advancePast?id=bb1'
+    $ curl http://localhost:13001/pools/abc/advancePast -F id=bb1
     {"Name":"abc","Template":".seek+301","Used":301,"Max":841,"Closed":false,"LastMint":"2013-12-03T11:43:53.049369916-05:00"}
 
 So now if we were to mint again:
 
-    $ curl -X POST 'http://localhost:13001/pools/abc/mint'
+    $ curl -X POST http://localhost:13001/pools/abc/mint
     ["bc3"]
 
 # Using mysql database backend
@@ -77,4 +77,4 @@ There is none.
 
 # Documentation
 
-See [noid-service.md]().
+See [noid-service.md](noid-service.md).
