@@ -147,17 +147,20 @@ noid from the file names.
 The noid template used in the command (`.reeddeeddk`) should be changed to reflect whatever
 format your application has been using.
 The result of this will be a number (the index) next to an identifier.
-Add some spoiler into the index---say 10,000---and then pass this number to the noid server's
-`advancePast` API call.
-The amount of the spoiler depends on how many noids you expect to be generated between running
-the command line and switching the system to use the noid server.
-If you don't expect any noids to be created, a spoiler of 0 is good enough.
-If you expect a few, use 10,000.
-If you expect a lot, use a larger number, say 100,000.
-The index does not increase by one each time a noid is generated.
-It is possible that it won't increase at all, since the index is to the "highest" noid which
-has been created so far, but the order in which randomized noids are created does not always increase
-the index.
+To synchronize the noid server with this identifier, pass it in to the appropriate pool
+on your noid server.
+For example, if the identifier were `rj430b984` and the pool we wanted to sync was named
+`xanadu-test` the following command would accomplish this.
+
+    $ curl localhost:13001/pools/xanadu-test/advancePast -F id=rj430b984
+
+If your application is minting a lot of identifiers during this process, mint some spoilers to
+ensure duplicate identifiers won't be created in the time you are doing this step.
+
+    $ curl localhost:13001/pools/xanadu-test/mint -F n=1000
+
+Do this as many times as you feel necessary (1000 is the maximum number of identifiers which can be minted at one time).
+For low throughput sites, it may not be necessary to do this spoiling at all.
 
 # Noid Template Format
 
