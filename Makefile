@@ -5,9 +5,8 @@ VERSION=$(shell cat VERSION)
 
 all: noids noid-tool/noid-tool
 
-noids: $(wildcard server/*.go)
-	cd server; go build -o noids .
-	mv server/noids .
+noids: $(wildcard *.go)
+	go build .
 
 noid-tool/noid-tool: $(wildcard noid-tool/*.go)
 	cd noid-tool; go build .
@@ -17,5 +16,5 @@ test:
 	go test ./...
 
 update-version:
-	echo "package main\n\nconst version = \"$(VERSION)\"" > server/version.go
+	echo "package main\n\nconst version = \"$(VERSION)\"" > version.go
 	sed -i .tmp -e "s/^Version:.*$$/Version: $(VERSION)/g" spec/noids.spec && rm -rf spec/noids.spec.tmp
