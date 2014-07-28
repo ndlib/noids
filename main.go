@@ -132,22 +132,21 @@ func main() {
 		err := gcfg.ReadFileInto(&config, configFile)
 		if err != nil {
 			log.Fatal(err)
-		} else {
-			// config file overrides command line
-			if config.General.Port != "" {
-				port = config.General.Port
-			}
-			if config.General.StorageDir != "" {
-				storageDir = config.General.StorageDir
-			}
-			if config.Mysql.Database != "" {
-				mysqlLocation = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-					config.Mysql.User,
-					config.Mysql.Password,
-					config.Mysql.Host,
-					config.Mysql.Port,
-					config.Mysql.Database)
-			}
+		}
+		// config file overrides command line
+		if config.General.Port != "" {
+			port = config.General.Port
+		}
+		if config.General.StorageDir != "" {
+			storageDir = config.General.StorageDir
+		}
+		if config.Mysql.Database != "" {
+			mysqlLocation = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+				config.Mysql.User,
+				config.Mysql.Password,
+				config.Mysql.Host,
+				config.Mysql.Port,
+				config.Mysql.Database)
 		}
 	}
 
