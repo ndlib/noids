@@ -130,15 +130,45 @@ Invalid ids will have a sequence number of -1.
 If no ids are given on the command line, they will be taken from stdin,
 with each id on its own line.
 
+While being a helpful for general noid issues, this tool is mainly intended to
+help transition an installation to using the noid server.
+Since there will already have been ids minted, the noid server will need to be
+advanced past any already minted identifiers.
+The noid tool can take a dump of all these minted identifiers and figure out the
+correct offset to pass to the noid server.
+For example, since Fedora Commons stores identifiers in the file name, we can figure out
+the correct offset using the following command line:
+
+    $ cd fedora/data/objectStore
+    $ find . -type f | cut -c 31- | noid-tool valid .reeddeeddk | sort -n | tail -1
+
+This is just an example, the first two commands (`find` and `cut`) are used to extract the
+noid from the file names.
+The noid template used in the command (`.reeddeeddk`) should be changed to reflect whatever
+format your application has been using.
+The result of this will be a number (the index) next to an identifier.
+Add some spoiler into the index---say 10,000---and then pass this number to the noid server's
+`advancePast` API call.
+The amount of the spoiler depends on how many noids you expect to be generated between running
+the command line and switching the system to use the noid server.
+If you don't expect any noids to be created, a spoiler of 0 is good enough.
+If you expect a few, use 10,000.
+If you expect a lot, use a larger number, say 100,000.
+The index does not increase by one each time a noid is generated.
+It is possible that it won't increase at all, since the index is to the "highest" noid which
+has been created so far, but the order in which randomized noids are created does not always increase
+the index.
+
 # Noid Template Format
 
-Implements the noid generator as specified in [https://wiki.ucop.edu/display/Curation/NOID]()
-We aim to be compatible with the [ruby noid generator](https://github.com/microservices/noid).
-In one respect, though, we are different: our random generation does not rely
-on a random number generator. Instead we will always generate the same
-sequence of ids---however the sequence generated will be scattered throughout the idspace.
+Noids implements the noid generator as specified in [https://wiki.ucop.edu/display/Curation/NOID]()
+It aims to be compatible with the [ruby noid generator](https://github.com/microservices/noid).
+In one respect, though, it is different: a noid template specifying random generation does not rely
+on a random number generator. Instead it will always generate the same
+sequence of ids---however the sequence generated will be scattered throughout the idspace and will
+appear "random".
 
-The noid template string has the following format:
+A noid template string has the following format:
 
 ```
     <slug> '.' <generator> <bins?> <template> <check?>
