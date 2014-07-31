@@ -18,6 +18,7 @@ var (
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	names := pools.AllPools()
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(names)
 }
@@ -39,6 +40,7 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
@@ -54,6 +56,7 @@ func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
 }
@@ -74,6 +77,7 @@ func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 		http.Error(w, err.Error(), 403)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
 }
@@ -104,6 +108,7 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(ids)
 }
@@ -125,6 +130,7 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(pi)
 }
@@ -139,6 +145,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	s := stats{
 		Version: version,
 	}
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(s)
 }
