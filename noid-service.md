@@ -2,7 +2,7 @@
 
 The API uses HTTP as its transport.
 No authentication or authorization is performed.
-There are no rate limits or request quotoas.
+There are no rate limits or request quotas.
 
 The service supports the creation and management of many _id pools_.
 Each pool is completely independent from the others.
@@ -174,7 +174,7 @@ appear "random".
 A noid template string has the following format:
 
 ```
-    <slug> '.' <generator> <bins?> <template> <check?>
+    <slug> '.' <generator> <bins?> <template> <check?> <counter?>
 ```
 
 Where
@@ -184,18 +184,20 @@ Where
 	<bins?> is an optional sequence of decimal digits
 	<digits> is a sequence of 'd' and 'e' characters
 	<check?> is an optional 'k' character
+	<counter?> is an optional and is a '+' followed by decimal digits. See below
 
 The `<bins>` element is optional, but can only be present if the generator is `r`
 
 Example format strings:
 
-	id.sd           -- produces id0, id1, id2, ..., id9.
+	id.sd           -- produces id0, id1, id2, ..., id9
 	id.zd           -- produces id0, id1, id2, ..., id9, id10, id11, ... unbounded
-	id.sdd          -- produces id00, id01, id02, ..., id98, id99.
-	.reeddeeddek    -- 0000000000, 02870v839n, 05741r66m1, ... zs25x6438m, zw12z326k0.
+	id.sdd          -- produces id00, id01, id02, ..., id98, id99
+	.reeddeeddek    -- 0000000000, 02870v839n, 05741r66m1, ... zs25x6438m, zw12z326k0
 	.zddddk         -- 00000, 00014, 00028, 0003d, 0004j, ... unbounded
-	.r500edek       -- 0000, 00kr, 015k, 01rb, ..., z8cn, z8zd, z9j7.
-	.sdek           -- 000, 012, 024, ..., 9w3, 9x5, 9z7.
+	.r500edek       -- 0000, 00kr, 015k, 01rb, ..., z8cn, z8zd, z9j7
+	.sdek           -- 000, 012, 024, ..., 9w3, 9x5, 9z7
+	a.rd.re         -- a.rd0, a.rd1, ..., a.rdz
 
 We extend the template string with state information to completely describe
 a noid minter as a string. The format is
@@ -211,3 +213,16 @@ For example:
 
 These are the format strings returned in the pool information JSON object.
 
+## Limitations
+
+The implementation uses integers to represent noid counters.
+Thus template strings which have between 2**63 and infinity possible identifiers
+will not function correctly due to overflow (the maximum size is too large to represent).
+For example the template `.seeeeeeeeeeeee` with 13 `e`s which has a
+pool size of 29**13 = 10,260,628,712,958,602,189 identifiers is one such
+problematic identifier.
+Template strings which have infinite pools will only
+have the first 2**63 identifiers minted, due to the overflow.
+There are no checks in place for overflows or to identify templates which cause problems.
+(It might even be a good idea to change the implementation to explicitly use
+`int64` types rather than relying on `int` types implicitly being represented with `int64`.)
