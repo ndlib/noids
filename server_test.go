@@ -58,6 +58,12 @@ func checkRoute(t *testing.T, verb, route string, status int, expected string) {
 			status,
 			resp.StatusCode)
 	}
+	// All sucessful requests should return JSON bodies
+	if resp.StatusCode < 300 {
+		if resp.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("%s: Content-Type is not application/json", route)
+		}
+	}
 	if expected != "" {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
