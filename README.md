@@ -2,8 +2,7 @@ noids
 =====
 
 Implements a server to provide a [NOID][] service.
-There are currently a file system storage plugin.
-It would be easy enough to also store information on minted noids in a database.
+It can persist its state to either the file system or a mysql database.
 For compatibility with existing ids, the minting tries to follow
 how the [Ruby Noid][] gem works.
 
@@ -68,8 +67,9 @@ So now if we were to mint again:
 
 # Using mysql database backend
 
-Use the command line option `--mysql` to store the noid states in a MySQL database.
-The format of the option is `user:password@tcp(hostname:port)/database`.
+MySql configuration can be done either using a config file or the command line.
+The command line option `--mysql` with the connection information in the format
+`user:password@tcp(hostname:port)/database`.
 
 # Security and Authentication
 
