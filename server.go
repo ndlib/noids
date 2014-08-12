@@ -108,6 +108,8 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Minted", ids)
+
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.Encode(ids)
