@@ -15,7 +15,7 @@ func TestEverything(t *testing.T) {
 		pi.Used != 0 ||
 		pi.Max != 70728100 ||
 		pi.Closed != false {
-		t.Errorf("%v does not match expected\n")
+		t.Errorf("%v does not match expected\n", pi)
 	}
 
 	pools := pg.AllPools()
