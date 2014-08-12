@@ -9,6 +9,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"regexp"
 	"syscall"
 
 	"code.google.com/p/gcfg"
@@ -167,7 +168,7 @@ func main() {
 		log.Println("Pool storage is sqlite3 database", sqliteFile)
 		db, err = sql.Open("sqlite3", sqliteFile)
 	case mysqlLocation != "":
-		log.Println("Pool storage is MySQL database", mysqlLocation)
+		log.Println("Pool storage is MySQL database", sanitizeDatabaseLocation(mysqlLocation))
 		db, err = sql.Open("mysql", mysqlLocation)
 	}
 	if err != nil {
@@ -189,4 +190,9 @@ func main() {
 		// we don't care if there is an error
 		os.Remove(pidfilename)
 	}
+}
+
+func sanitizeDatabaseLocation(location string) string {
+	var re = regexp.MustCompile(":[^@]*@")
+	return re.ReplaceAllLiteralString(location, ":***@")
 }
