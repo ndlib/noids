@@ -26,7 +26,7 @@ On my Mac I use homebrew:
 
 2. Get the noid server:
 
-        go get github.com/dbrower/noids
+        go get github.com/ndlib/noids
 
 3. Run the server:
 

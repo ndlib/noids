@@ -26,7 +26,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/dbrower/noids/noid"
+	"github.com/ndlib/noids/noid"
 )
 
 func usage() {

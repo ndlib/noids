@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dbrower/noids/noid"
+	"github.com/ndlib/noids/noid"
 )
 
 // PoolInfo contains the public info for a pool. We
