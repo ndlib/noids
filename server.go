@@ -17,10 +17,7 @@ var (
 
 func PoolsHandler(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
-	names := pools.AllPools()
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(names)
+	writeJSON(w, pools.AllPools())
 }
 
 func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,14 +33,12 @@ func NewPoolHandler(w http.ResponseWriter, r *http.Request) {
 		if err == NameExists {
 			http.Error(w, "name already exists", 409)
 		} else {
+			log.Println("Error:", err)
 			http.Error(w, err.Error(), 400)
 		}
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(201)
-	enc := json.NewEncoder(w)
-	enc.Encode(pi)
+	writeJSONStatus(w, pi, 201)
 }
 
 func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,13 +47,11 @@ func PoolShowHandler(w http.ResponseWriter, r *http.Request) {
 	pi, err := pools.GetPool(name)
 	if err != nil {
 		// most likely the error is that the pool name doesn't exist
+		log.Println("Error:", err)
 		http.Error(w, err.Error(), 404)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(pi)
+	writeJSON(w, pi)
 }
 
 func PoolOpenHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +67,11 @@ func handleOpenClose(w http.ResponseWriter, r *http.Request, makeClosed bool) {
 	name := r.FormValue(":poolname")
 	pi, err := pools.SetPoolState(name, makeClosed)
 	if err != nil {
+		log.Println("Error:", err)
 		http.Error(w, err.Error(), 403)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(pi)
+	writeJSON(w, pi)
 }
 
 func MintHandler(w http.ResponseWriter, r *http.Request) {
@@ -104,15 +96,12 @@ func MintHandler(w http.ResponseWriter, r *http.Request) {
 
 	ids, err := pools.PoolMint(name, count)
 	if err != nil {
+		log.Println("Error:", err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
-
 	log.Println("Minted", ids)
-
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(ids)
+	writeJSON(w, ids)
 }
 
 func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
@@ -128,13 +117,11 @@ func AdvancePastHandler(w http.ResponseWriter, r *http.Request) {
 
 	pi, err := pools.PoolAdvancePast(name, id)
 	if err != nil {
+		log.Println("Error:", err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(pi)
+	writeJSON(w, pi)
 }
 
 // For now the stats provided are meager
@@ -147,13 +134,25 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	s := stats{
 		Version: version,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(s)
+	writeJSON(w, s)
 }
 
 func logRequest(r *http.Request) {
 	log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
+}
+
+// use the standard library json Encoder to serialize `value` to `w`.
+// Tries to set the content type to application/json.
+// Returns status code 200. Use writeJSONStatus() to set a status code.
+func writeJSON(w http.ResponseWriter, value interface{}) {
+	writeJSONStatus(w, value, 200)
+}
+
+func writeJSONStatus(w http.ResponseWriter, value interface{}, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	enc := json.NewEncoder(w)
+	enc.Encode(value)
 }
 
 // SetupHandlers adds the routes to the global http route table.
