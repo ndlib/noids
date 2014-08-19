@@ -16,10 +16,14 @@ On my Mac I use homebrew:
 
         brew install go
 
+    Make sure the go version is >= 1.3
+
+        go version
+
     Now set the "Go Path":
 
-        mkdir ~/go
-        export GOPATH=~/go
+        mkdir ~/gocode
+        export GOPATH=~/gocode
 
 [Go]: http://golang.org/
 
