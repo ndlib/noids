@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"regexp"
 	"syscall"
+	"time"
 
 	"code.google.com/p/gcfg"
 	_ "github.com/go-sql-driver/mysql"
@@ -175,7 +176,19 @@ func main() {
 		log.Fatalf("Error opening database: %s", err.Error())
 	}
 	if db != nil {
+		var waitTime = 1
 		store = NewDbFileStore(db)
+		for store == nil {
+			log.Printf("Problem loading pools from database. Trying again in %d seconds", waitTime)
+			time.Sleep(time.Duration(waitTime) * time.Second)
+			waitTime *= 2
+			// cap to 5 minutes
+			if waitTime > 300 {
+				waitTime = 300
+			}
+			// try again
+			store = NewDbFileStore(db)
+		}
 	}
 	SetupHandlers(store)
 	if pidfilename != "" {
