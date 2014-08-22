@@ -1,5 +1,9 @@
 # Changelog
 
+* Version 1.0.4
+    - Log more errors
+    - If configured for a database backend, at startup only continue if connected.
+
 * Version 1.0.3
 	- Move repository to github.com/ndlib
 	- Update sqlite3 package
