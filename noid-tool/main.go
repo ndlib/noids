@@ -134,6 +134,9 @@ func main() {
 			f = func(s string) { generate(n, s) }
 		}
 		rest = args[2:]
+	default:
+		flag.Usage()
+		return
 	}
 
 	// take input from either stdin or the command line
