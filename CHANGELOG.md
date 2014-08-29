@@ -1,5 +1,9 @@
 # Changelog
 
+* Version 1.0.5
+    - Fix syntax error in logrotate file. Now the server should get a USR1 signal to reopen log files
+    - Fix seg fault in noid-tool utility. (Does not affect the server)
+
 * Version 1.0.4
     - Log more errors
     - If configured for a database backend, at startup only continue if connected.

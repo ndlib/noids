@@ -4,7 +4,7 @@
 %global __strip	/bin/true
 
 Name:		noids
-Version: 1.0.4
+Version: 1.0.5
 Release:	1%{?dist}
 Summary:	Noids identifier server
 
