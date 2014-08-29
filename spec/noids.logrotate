@@ -6,6 +6,6 @@
     compress
     sharedscripts
     postrotate
-        /bin/kill -USR1 $(cat /opt/noids/noids.pid) 2>/dev/null) 2>/dev/null || :
+        /bin/kill -USR1 $(cat /opt/noids/noids.pid 2>/dev/null) 2>/dev/null || :
     endscript
 }
