@@ -2,6 +2,7 @@ package gcfg
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"reflect"
 	"testing"
@@ -21,10 +22,12 @@ type cBasic struct {
 	Hyphen_In_Section cBasicS2
 	unexported        cBasicS1
 	Exported          cBasicS3
+	TagName           cBasicS1 `gcfg:"tag-name"`
 }
 type cBasicS1 struct {
-	Name string
-	Int  int
+	Name  string
+	Int   int
+	PName *string
 }
 type cBasicS2 struct {
 	Hyphen_In_Name string
@@ -66,7 +69,7 @@ type cMulti struct {
 }
 type cMultiS1 struct{ Multi []string }
 type cMultiS2 struct{ NonMulti nonMulti }
-type cMultiS3 struct{ MultiInt []int }
+type cMultiS3 struct{ PMulti *[]string }
 
 type cSubs struct{ Sub map[string]*cSubsS1 }
 type cSubsS1 struct{ Name string }
@@ -82,15 +85,24 @@ type cNum struct {
 	N2 cNumS2
 	N3 cNumS3
 }
-type cNumS1 struct{ Int int }
-type cNumS2 struct{ MultiInt []int }
+type cNumS1 struct {
+	Int    int
+	IntDHO int `gcfg:",int=dho"`
+	Big    *big.Int
+}
+type cNumS2 struct {
+	MultiInt []int
+	MultiBig []*big.Int
+}
 type cNumS3 struct{ FileMode os.FileMode }
-
 type readtest struct {
 	gcfg string
 	exp  interface{}
 	ok   bool
 }
+
+func newString(s string) *string           { return &s }
+func newStringSlice(s ...string) *[]string { return &s }
 
 var readtests = []struct {
 	group string
@@ -172,6 +184,13 @@ var readtests = []struct {
 	{"\n[sub \"\"]\nname=value", &cSubs{}, false},
 }}, {"setting", []readtest{
 	{"[section]\nname=value", &cBasic{Section: cBasicS1{Name: "value"}}, true},
+	// pointer
+	{"[section]", &cBasic{Section: cBasicS1{PName: nil}}, true},
+	{"[section]\npname=value", &cBasic{Section: cBasicS1{PName: newString("value")}}, true},
+	{"[m3]", &cMulti{M3: cMultiS3{PMulti: nil}}, true},
+	{"[m3]\npmulti", &cMulti{M3: cMultiS3{PMulti: newStringSlice()}}, true},
+	{"[m3]\npmulti=value", &cMulti{M3: cMultiS3{PMulti: newStringSlice("value")}}, true},
+	{"[m3]\npmulti=value1\npmulti=value2", &cMulti{M3: cMultiS3{PMulti: newStringSlice("value1", "value2")}}, true},
 	// section name not matched
 	{"\n[nonexistent]\nname=value", &cBasic{}, false},
 	// subsection name not matched
@@ -187,11 +206,17 @@ var readtests = []struct {
 	{"[甲]\n乙=丙", &cUni{X甲: cUniS1{X乙: "丙"}}, true},
 	//{"[section]\nxname=value", &cBasic{XSection: cBasicS4{XName: "value"}}, false},
 	//{"[xsection]\nname=value", &cBasic{XSection: cBasicS4{XName: "value"}}, false},
+	// name specified as struct tag
+	{"[tag-name]\nname=value", &cBasic{TagName: cBasicS1{Name: "value"}}, true},
+	// empty subsections
+	{"\n[sub \"A\"]\n[sub \"B\"]", &cSubs{map[string]*cSubsS1{"A": &cSubsS1{}, "B": &cSubsS1{}}}, true},
 }}, {"multivalue", []readtest{
 	// unnamed slice type: treat as multi-value
 	{"\n[m1]", &cMulti{M1: cMultiS1{}}, true},
 	{"\n[m1]\nmulti=value", &cMulti{M1: cMultiS1{[]string{"value"}}}, true},
 	{"\n[m1]\nmulti=value1\nmulti=value2", &cMulti{M1: cMultiS1{[]string{"value1", "value2"}}}, true},
+	// "blank" empties multi-valued slice -- here same result as above
+	{"\n[m1]\nmulti\nmulti=value1\nmulti=value2", &cMulti{M1: cMultiS1{[]string{"value1", "value2"}}}, true},
 	// named slice type: do not treat as multi-value
 	{"\n[m2]", &cMulti{}, true},
 	{"\n[m2]\nmulti=value", &cMulti{}, false},
@@ -205,11 +230,13 @@ var readtests = []struct {
 	{"[section]\nbool=yes", &cBool{cBoolS1{true}}, true},
 	{"[section]\nbool=on", &cBool{cBoolS1{true}}, true},
 	{"[section]\nbool=1", &cBool{cBoolS1{true}}, true},
+	{"[section]\nbool=tRuE", &cBool{cBoolS1{true}}, true},
 	{"[section]\nbool=false", &cBool{cBoolS1{false}}, true},
 	{"[section]\nbool=no", &cBool{cBoolS1{false}}, true},
 	{"[section]\nbool=off", &cBool{cBoolS1{false}}, true},
 	{"[section]\nbool=0", &cBool{cBoolS1{false}}, true},
-	// implicit value (true)
+	{"[section]\nbool=NO", &cBool{cBoolS1{false}}, true},
+	// "blank" value handled as true
 	{"[section]\nbool", &cBool{cBoolS1{true}}, true},
 	// bool parse errors
 	{"[section]\nbool=maybe", &cBool{}, false},
@@ -223,9 +250,16 @@ var readtests = []struct {
 	{"[section]\nint=-1", &cBasic{Section: cBasicS1{Int: -1}}, true},
 	{"[section]\nint=0.2", &cBasic{}, false},
 	{"[section]\nint=1e3", &cBasic{}, false},
-	// primitive [u]int(|8|16|32|64) is parsed as decimal (not octal)
+	// primitive [u]int(|8|16|32|64) and big.Int is parsed as dec or hex (not octal)
 	{"[n1]\nint=010", &cNum{N1: cNumS1{Int: 10}}, true},
+	{"[n1]\nint=0x10", &cNum{N1: cNumS1{Int: 0x10}}, true},
+	{"[n1]\nbig=1", &cNum{N1: cNumS1{Big: big.NewInt(1)}}, true},
+	{"[n1]\nbig=0x10", &cNum{N1: cNumS1{Big: big.NewInt(0x10)}}, true},
+	{"[n1]\nbig=010", &cNum{N1: cNumS1{Big: big.NewInt(10)}}, true},
 	{"[n2]\nmultiint=010", &cNum{N2: cNumS2{MultiInt: []int{10}}}, true},
+	{"[n2]\nmultibig=010", &cNum{N2: cNumS2{MultiBig: []*big.Int{big.NewInt(10)}}}, true},
+	// set parse mode for int types via struct tag
+	{"[n1]\nintdho=010", &cNum{N1: cNumS1{IntDHO: 010}}, true},
 	// octal allowed for named type
 	{"[n3]\nfilemode=0777", &cNum{N3: cNumS3{FileMode: 0777}}, true},
 }}, {"type:textUnmarshaler", []readtest{
@@ -243,11 +277,21 @@ func TestReadStringInto(t *testing.T) {
 	}
 }
 
+func TestReadStringIntoMultiBlankPreset(t *testing.T) {
+	tt := readtest{"\n[m1]\nmulti\nmulti=value1\nmulti=value2", &cMulti{M1: cMultiS1{[]string{"value1", "value2"}}}, true}
+	cfg := &cMulti{M1: cMultiS1{[]string{"preset1", "preset2"}}}
+	testReadInto(t, "multi:blank", tt, cfg)
+}
+
 func testRead(t *testing.T, id string, tt readtest) {
 	// get the type of the expected result
 	restyp := reflect.TypeOf(tt.exp).Elem()
 	// create a new instance to hold the actual result
 	res := reflect.New(restyp).Interface()
+	testReadInto(t, id, tt, res)
+}
+
+func testReadInto(t *testing.T, id string, tt readtest, res interface{}) {
 	err := ReadStringInto(res, tt.gcfg)
 	if tt.ok {
 		if err != nil {

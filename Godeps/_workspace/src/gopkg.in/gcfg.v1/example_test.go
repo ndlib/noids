@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-import "code.google.com/p/gcfg"
+import "gopkg.in/gcfg.v1"
 
 func ExampleReadStringInto() {
 	cfgStr := `; Comment line
@@ -55,6 +55,23 @@ variable-name=value # comment`
 		log.Fatalf("Failed to parse gcfg data: %s", err)
 	}
 	fmt.Println(cfg.Section_Name.Variable_Name)
+	// Output: value
+}
+
+func ExampleReadStringInto_tags() {
+	cfgStr := `; Comment line
+[section]
+var-name=value # comment`
+	cfg := struct {
+		Section struct {
+			FieldName string `gcfg:"var-name"`
+		}
+	}{}
+	err := gcfg.ReadStringInto(&cfg, cfgStr)
+	if err != nil {
+		log.Fatalf("Failed to parse gcfg data: %s", err)
+	}
+	fmt.Println(cfg.Section.FieldName)
 	// Output: value
 }
 

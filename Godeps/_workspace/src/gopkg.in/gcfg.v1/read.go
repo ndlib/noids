@@ -9,8 +9,8 @@ import (
 )
 
 import (
-	"code.google.com/p/gcfg/scanner"
-	"code.google.com/p/gcfg/token"
+	"gopkg.in/gcfg.v1/scanner"
+	"gopkg.in/gcfg.v1/token"
 )
 
 var unescape = map[rune]rune{'\\': '\\', '"': '"', 'n': '\n', 't': '\t'}
@@ -100,6 +100,13 @@ func readInto(config interface{}, fset *token.FileSet, file *token.File, src []b
 			if tok != token.EOL && tok != token.EOF && tok != token.COMMENT {
 				return errfn("expected EOL, EOF, or comment")
 			}
+			// If a section/subsection header was found, ensure a
+			// container object is created, even if there are no
+			// variables further down.
+			err := set(config, sect, sectsub, "", true, "")
+			if err != nil {
+				return err
+			}
 		case token.IDENT:
 			if sect == "" {
 				return errfn("expected section header")
@@ -109,10 +116,8 @@ func readInto(config interface{}, fset *token.FileSet, file *token.File, src []b
 			if errs.Len() > 0 {
 				return errs.Err()
 			}
-			var v string
-			if tok == token.EOF || tok == token.EOL || tok == token.COMMENT {
-				v = implicitValue
-			} else {
+			blank, v := tok == token.EOF || tok == token.EOL || tok == token.COMMENT, ""
+			if !blank {
 				if tok != token.ASSIGN {
 					return errfn("expected '='")
 				}
@@ -132,7 +137,7 @@ func readInto(config interface{}, fset *token.FileSet, file *token.File, src []b
 					return errfn("expected EOL, EOF, or comment")
 				}
 			}
-			err := set(config, sect, sectsub, n, v)
+			err := set(config, sect, sectsub, n, blank, v)
 			if err != nil {
 				return err
 			}

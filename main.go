@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"code.google.com/p/gcfg"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mxk/go-sqlite/sqlite3"
+	"gopkg.in/gcfg.v1"
 )
 
 type Reopener interface {

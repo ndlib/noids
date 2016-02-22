@@ -1,14 +1,10 @@
 {
-	"ImportPath": "github.com/dbrower/noids",
-	"GoVersion": "go1.3",
+	"ImportPath": "github.com/ndlib/noids",
+	"GoVersion": "go1.5.3",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
-		{
-			"ImportPath": "code.google.com/p/gcfg",
-			"Rev": "b20c9bcaa88855ad2ef4d7343d7cb93c167cccc2"
-		},
 		{
 			"ImportPath": "github.com/go-sql-driver/mysql",
 			"Comment": "go1",
@@ -29,6 +25,10 @@
 		{
 			"ImportPath": "github.com/mxk/go-sqlite/sqlite3",
 			"Rev": "167da9432e1f4602e95ea67b67051cfa34412e3f"
+		},
+		{
+			"ImportPath": "gopkg.in/gcfg.v1",
+			"Rev": "083575c3955c85df16fe9590cceab64d03f5eb6e"
 		}
 	]
 }
