@@ -62,6 +62,8 @@ go build
 mv noids $GOPATH/bin/
 ```
 
+> `go build` only updates the noid server. The Makefile will build both `noids` and `noid-tool`. Use the `make` command to evaluate the Makefile from the root directory of the project.
+
 #### If you want to install the latest version from github
 If you have already pushed your changes to github or if the project has been updated and you want to install the latest version use `go get`.
 
