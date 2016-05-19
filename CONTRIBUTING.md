@@ -14,14 +14,14 @@ brew install go
 > Go is already configured by [DLT dotfiles](https://github.com/ndlib/dlt-dotfiles).
 
 ### Preparing the Environment
-Go has built-in dependency management that performs functions inside the directory that is set as `$GOPATH`. Our convention for development environments is to set `$GOPATH` to `~/gocode`.
+Go has built-in dependency management. It performs functions inside a directory that is set as the `$GOPATH`. Our convention for development environments is to set `$GOPATH` to `~/gocode`.
 
 ```console
 mkdir ~/gocode
 export GOPATH='~/gocode'
 ```
 
-> If you manage your shell environment with [DLT dotfiles](https://github.com/ndlib/dlt-dotfiles) it will set this up for you.
+> If you manage your shell environment with [DLT dotfiles](https://github.com/ndlib/dlt-dotfiles) it will set up your `$GOPATH` for you.
 
 To verify that `$GOPATH` is configured correctly try:
 
@@ -39,7 +39,7 @@ go get -u github.com/ndlib/noids
 ```
 
 ### Configuring git
-The git repository configuration used by `go get` is not set up to make commits back to the project. If you will be changes to noids you will need to reconfigure it.
+The default configuration for git repositories created via `go get` is not set up to allow you to make commits back to the project. Before you make changes to the noids codebase you will need to reconfigure the git repository.
 
 ```console
 cd $GOPATH/src/github.com/ndlib/noids
@@ -54,7 +54,7 @@ noids defines one executable `noids`. When the codebase in checked out using `go
 > `$GOPATH/bin` is already included in your `$PATH` if you use [DLT dotfiles](https://github.com/ndlib/dlt-dotfiles). Otherwise you will want to call it directly `$GOPATH/bin/noids` or include `$GOPATH/bin` in you `$PATH` manually e.g. `export $PATH=$GOPATH/bin:$PATH`.
 
 #### If you have made changes locally
-To recompile the executable after you make changes use `go build`. It will create the `noids` executable at the root of the project directory. You will have to manually update the executable in `$GOPATH/bin`.
+To recompile the code after you make changes use `go build`. It will create the `noids` executable at the root of the project directory. You will have to manually update the executable in `$GOPATH/bin`.
 
 ```console
 cd $GOPATH/src/github.com/ndlib/noids/
@@ -78,7 +78,7 @@ There are also several setup steps in order to _run_ the noids server. For testi
 cd $GOPATH/src/github.com/ndlib/noids/ & ./boostrap.sh
 ```
 
-This will create the needed directories, initialize the log file, start the server and display the log on STDOUT.
+This will create the needed directories, initialize the log file, start the server, create a “dev” noid pool, and display the log on STDOUT.
 
 If you wish to configure `noids` manually continue with the provided instructions.
 
@@ -121,4 +121,4 @@ Should return a hash of information e.g.
 {"Name":"dev","Template":".rddddd+0","Used":0,"Max":100000,"Closed":false,"LastMint":"2016-05-18T15:21:41.823473383-04:00"}
 ```
 
-Now checking for pools should return `["dev"]`
+Now checking for pools should return `["dev"]`. Once there is at least one noid pool you can mint identifiers.
