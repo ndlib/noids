@@ -72,13 +72,21 @@ go get -u github.com/ndlib/noids
 ```
 
 ## Running noids
-There are also several setup steps in order to _run_ the batch ingest.
-
-### Directory Setup
-By convention we will run noids out of the `~/goapps` directory. It expects the presence of to directories: `queue` and `tasks`.
+There are also several setup steps in order to _run_ the noids server. For testing noids in development use the provided boostrap script.
 
 ```console
-mkdir -p ~/goapps/noids/development
+cd $GOPATH/src/github.com/ndlib/noids/ & ./boostrap.sh
+```
+
+This will create the needed directories, initialize the log file, start the server and display the log on STDOUT.
+
+If you wish to configure `noids` manually continue with the provided instructions.
+
+### Directory Setup
+By convention we will run noids out of the `~/goapps` directory.
+
+```console
+mkdir -p ~/goapps/noids
 ```
 
 > Creating a directory isn’t strictly needed for testing in development. By default noids stores everything in memory and writes its log to STDOUT.
