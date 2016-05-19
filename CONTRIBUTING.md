@@ -4,7 +4,7 @@
 noids is a go service. There are several steps you must complete before you can to run the services, compile the code, and commit to the project.
 
 ### Development Dependencies
-noids only depends on `go` in order to work correctly.
+noids only depends on `go` in order to work correctly. `curl` is used for testing, a version of `curl` is distributed with OSX.
 
 ```console
 brew update
