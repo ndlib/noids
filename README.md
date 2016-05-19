@@ -1,6 +1,11 @@
 noids
 =====
 
+[![APACHE 2
+License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
+[![Contributing
+Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+
 Implements a server to provide a [NOID][] service.
 It can persist its state to either the file system or a mysql database.
 For compatibility with existing ids, the minting tries to follow
