@@ -75,7 +75,7 @@ go get -u github.com/ndlib/noids
 There are also several setup steps in order to _run_ the noids server. For testing noids in development use the provided boostrap script.
 
 ```console
-cd $GOPATH/src/github.com/ndlib/noids/ & ./boostrap.sh
+cd $GOPATH/src/github.com/ndlib/noids/ && ./boostrap.sh
 ```
 
 This will create the needed directories, initialize the log file, start the server, create a “dev” noid pool, and display the log on STDOUT.
