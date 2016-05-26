@@ -12,15 +12,15 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "708054d61e5a2918b9f4e9700000ee611dcf03f5"
+			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "b08c5fcf14d01cb0c20ddf70157f54d4a2c3a38a"
+			"Rev": "26a6070f849969ba72b72256e9f14cf519751690"
 		},
 		{
 			"ImportPath": "github.com/gorilla/pat",
-			"Rev": "f2712b46e37909b1a3a95560e3dfacc32ab54d38"
+			"Rev": "b7cd0138c80d81eb51e2711810451f6357c4ab5b"
 		},
 		{
 			"ImportPath": "github.com/mxk/go-sqlite/sqlite3",
