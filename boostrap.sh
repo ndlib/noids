@@ -11,5 +11,6 @@ touch "$NOIDSLOG"
 cat /dev/null > "$NOIDSLOG"
 
 noids -log "$NOIDSLOG" &
+sleep 1
 curl --data 'name=dev&template=.rddddd' localhost:13001/pools
 tail -f "$NOIDSLOG"
