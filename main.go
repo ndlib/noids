@@ -127,7 +127,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 	logw = NewReopener(logfilename)
 	logw.Reopen()
-	log.Println("-----Starting Server")
+	log.Println("-----Starting Noids Server", version)
 
 	if configFile != "" {
 		log.Printf("Reading config file %s", configFile)
