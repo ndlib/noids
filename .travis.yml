@@ -5,6 +5,6 @@ go:
  - 1.5.3
  - 1.6
 
-install: true
-
+# this should use the Godep workspace since travis prepends
+# that path to the GOPATH
 script: go test -v ./...
