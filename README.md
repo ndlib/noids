@@ -5,6 +5,8 @@ noids
 License](http://img.shields.io/badge/APACHE2-license-blue.svg)](./LICENSE)
 [![Contributing
 Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+[![Go Report
+Card](https://goreportcard.com/badge/github.com/ndlib/noids)](https://goreportcard.com/report/github.com/ndlib/noids)
 
 Implements a server to provide a [NOID][] service.
 It can persist its state to either the file system or a mysql database.
