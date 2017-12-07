@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/mxk/go-sqlite/sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestDbSavePool(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mxk/go-sqlite/sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	"gopkg.in/gcfg.v1"
 )
 
