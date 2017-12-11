@@ -23,7 +23,7 @@ On my Mac I use homebrew:
 
         brew install go
 
-    Make sure the go version is >= 1.3
+    Make sure the go version is >= 1.9.2
 
         go version
 
