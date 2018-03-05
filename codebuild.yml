@@ -98,7 +98,7 @@ Resources:
   Project:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: bendo
+      Name: noids
       Description: 'noids from GitHub to S3 rpm'
       ServiceRole: !If [NoCodeBuildRole, !ImportValue 'codebuild:role', !Ref CodeBuildRole]
       TimeoutInMinutes: 5
@@ -107,7 +107,7 @@ Resources:
         Type: S3
         Packaging: NONE
         NamespaceType: NONE
-        Path: bendo
+        Path: noids
         Name: rpms
         Location: !If [NoBucket, !Ref Bucket, !Ref TargetBucket]
       Environment:
