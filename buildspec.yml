@@ -1,0 +1,18 @@
+---
+version: 0.2
+
+
+phases:
+
+  build:
+    commands:
+      - mkdir -p /go/src/github.com/ndlib
+      - ln -s / /go/src/github.com/ndlib/noids
+      - export PATH="/go/bin:/usr/local/go/bin:$PATH"
+      - make rpm
+
+
+artifacts:
+  files:
+    - noids-*rpm
+...
