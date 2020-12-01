@@ -1,0 +1,16 @@
+github.com/go-sql-driver/mysql v1.3.0 h1:pgwjLi/dvffoP9aabwkT3AKpXQM93QARkjFhDDqC1UE=
+github.com/go-sql-driver/mysql v1.3.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
+github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f h1:9oNbS1z4rVpbnkHBdPZU4jo9bSmrLpII768arSyMFgk=
+github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
+github.com/gorilla/mux v1.6.0 h1:UykbtMB/w5No2LmE16gINgLj+r/vbziTgaoERQv6U+0=
+github.com/gorilla/mux v1.6.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c h1:/dq3+XpxRH+cjiua5GyJKE80RXZfZbmT8ejIcNsb93Q=
+github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c/go.mod h1:YeAe0gNeiNT5hoiZRI4yiOky6jVdNvfO2N6Kav/HmxY=
+github.com/mattn/go-sqlite3 v1.4.0 h1:uBR791wsGR0MwOn2qBSbln4BRuv1/sN7jP0wQ8D6RVs=
+github.com/mattn/go-sqlite3 v1.4.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
+golang.org/x/net v0.0.0-20171207153738-faacc1b5e36e h1:tA5gP10RoCFqUng+O97q1V4ApSpXQJi6LHT1hyomufg=
+golang.org/x/net v0.0.0-20171207153738-faacc1b5e36e/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+gopkg.in/gcfg.v1 v1.2.1 h1:wJld/fq1ChPq0K12xrOWpH9E0708XZpQK05DUY0tZmk=
+gopkg.in/gcfg.v1 v1.2.1/go.mod h1:yesOnuUOFQAhST5vPY4nbZsb/huCgGGXlipJsBn0b3o=
+gopkg.in/warnings.v0 v0.1.2 h1:wFXVbFY8DY5/xOe1ECiWdKCzZlxgshcYVNkBHstARME=
+gopkg.in/warnings.v0 v0.1.2/go.mod h1:jksf8JmL6Qr/oQM2OXTHunEvvTAsrWBLb6OOjuVWRNI=

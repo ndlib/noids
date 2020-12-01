@@ -1,21 +1,11 @@
 # TODO
 
-Last revised 2014-5-8.
+Last revised 2020-11-30
 
 [X] add a database backend to store noid state
 [X] add support for config files. Mainly to store database credentials and simplify writing of init scripts.
 [X] change noid service to guarantee no duplicates. (Currently, state is flushed to disk every 5 seconds).
 [X] Add `-version` command line switch
-[X] create a log rotate config for spec file and decide on a default log place /opt/noids/log/...
-[X] create an upstart config for spec file
-[X] should rpm put file at /opt/noids to satisfy our local procedures.
-    /opt/noids/1.0.1/bin/...
-    /opt/noids/current -> /opt/noids/1.0.1
-    /opt/noids/log/...
-    /opt/noids/config
-    /opt/noids/pools/...
-[X] Get default port from Mark (13001)
-[X] Choose a default storage directory /opt/noids/pools/...
 [X] Tag versions in github.
 [ ] Standardize the naming: a noid _counter_ belongs to a _pool_, etc. (this may already be done...)
 [ ] Look at https://github.com/rcrowley/go-tigertonic for better (?) logging, metrics,
