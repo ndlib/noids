@@ -113,5 +113,9 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: hesburghlibraries/noids-buildimage
+        Image: !Ref BuildImageRHEL7
+        ImagePullCredentialsType: SERVICE_ROLE
+        RegistryCredential:
+          Credential: "/all/dockerhub/credentials"
+          CredentialProvider: SECRETS_MANAGER
 ...
