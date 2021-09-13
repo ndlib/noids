@@ -1,0 +1,12 @@
+# Parameters for disadis-codebuild-new
+#
+StackName: noids-codebuild-0921
+parameters:
+  CodeBuildRole: "{{ CodeBuildRole }}"
+  TargetBucket: "{{ TargetBucket }}"
+  LogRetention: "{{ LogRetention }}"
+tags:
+  Owner: ESU
+  Description: noids-codebuild from CF
+  Name: noids-codebuild-0921
+  Contact: lib-esu-group@nd.edu
