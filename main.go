@@ -120,14 +120,14 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		fmt.Printf("noids version %s\n", version)
+		fmt.Printf("noids version %s\n", Version)
 		return
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 	logw = NewReopener(logfilename)
 	logw.Reopen()
-	log.Println("-----Starting Noids Server", version)
+	log.Println("-----Starting Noids Server", Version)
 
 	if configFile != "" {
 		log.Printf("Reading config file %s", configFile)

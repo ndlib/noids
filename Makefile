@@ -9,7 +9,7 @@ GO15VENDOREXPERIMENT=1
 all: noids noid-tool/noid-tool
 
 noids: $(wildcard *.go)
-	go build .
+	go build -ldflags "-X main.Version=$(VERSION)" .
 
 noid-tool/noid-tool: $(wildcard noid-tool/*.go)
 	cd noid-tool; go build .
