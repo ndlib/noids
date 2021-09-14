@@ -43,6 +43,10 @@ On my Mac I use homebrew:
         mkdir ~/noid_pool
         $GOPATH/bin/noids --storage ~/noid_pool
 
+4. Set up a new identifier pool named "dev":
+
+    curl --data 'name=dev&template=.zdddd' localhost:13001/pools
+
 # Using the API
 
 Get a list of current noid counters:
