@@ -98,7 +98,7 @@ Resources:
   Project:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: noids-0921
+      Name: !Sub ${AWS::StackName}-RPMBuilder
       Description: 'noids from GitHub to S3 rpm'
       ServiceRole: !If [NoCodeBuildRole, !ImportValue 'codebuild:role', !Ref CodeBuildRole]
       TimeoutInMinutes: 5
