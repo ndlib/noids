@@ -15,6 +15,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/getsentry/sentry-go"
 	"gopkg.in/gcfg.v1"
 )
 
@@ -129,10 +130,24 @@ func main() {
 	logw.Reopen()
 	log.Println("-----Starting Noids Server", version)
 
+        // Initialize Sentry Error Reporting. For this to work, the environmant var
+        // SENTRY_DSN, SENTRY_ENV, and SENTRY_REL need to be set
+	sentry_init_err := sentry.Init(sentry.ClientOptions{
+		Debug: false,
+	})
+	if sentry_init_err != nil {
+		log.Fatalf("sentry.Init: %s", sentry_init_err)
+	}
+
+        // noids restarting should be a very rare thing.
+        sentry.CaptureMessage("Noids Server Started!")
+        defer sentry.Flush(2 * time.Second)
+
 	if configFile != "" {
 		log.Printf("Reading config file %s", configFile)
 		err := gcfg.ReadFileInto(&config, configFile)
 		if err != nil {
+                        sentry.CaptureException(err)
 			log.Fatal(err)
 		}
 		// config file overrides command line
@@ -173,6 +188,7 @@ func main() {
 		db, err = sql.Open("mysql", mysqlLocation)
 	}
 	if err != nil {
+                sentry.CaptureException(err)
 		log.Fatalf("Error opening database: %s", err.Error())
 	}
 	if db != nil {
@@ -197,6 +213,8 @@ func main() {
 	log.Println("Listening on port", port)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
+                // This should send errors from any of the HTTP routes to Sentry
+                sentry.CaptureException(err)
 		log.Fatal("ListenAndServe: ", err)
 	}
 	if pidfilename != "" {

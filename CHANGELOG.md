@@ -1,4 +1,6 @@
 # Changelog
+* Version 1.2.0
+    - Add Sentry Error Logging
 
 * Version 1.0.5
     - Fix syntax error in logrotate file. Now the server should get a USR1 signal to reopen log files
