@@ -140,7 +140,8 @@ func main() {
 	}
 
         // noids restarting should be a very rare thing.
-        sentry.CaptureMessage("Noids Server Started!")
+	log.Printf("Sentry Initialization Successful" )
+        sentry.CaptureMessage("Noids Server Starting!")
         defer sentry.Flush(2 * time.Second)
 
 	if configFile != "" {
