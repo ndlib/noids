@@ -55,8 +55,7 @@ Options:
 
 
 If no ids are given on the command line, they will be taken from stdin,
-with each id on its own line.
-`)
+with each id on its own line.`)
 }
 
 func getNoid(template string) *noid.Noid {

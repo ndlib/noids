@@ -132,7 +132,7 @@ type stats struct {
 func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	s := stats{
-		Version: version,
+		Version: Version,
 	}
 	writeJSON(w, s)
 }
