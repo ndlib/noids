@@ -130,10 +130,6 @@ func main() {
 	logw.Reopen()
 	log.Println("-----Starting Noids Server", version)
 
-        log.Printf("SENTRY_DSN=%s",os.Getenv("SENTRY_DSN"))
-        log.Printf("SENTRY_ENV=%s",os.Getenv("SENTRY_ENV"))
-        log.Printf("SENTRY_REL=%s",os.Getenv("SENTRY_REL"))
-
         // Initialize Sentry Error Reporting. For this to work, the environmant var
         // SENTRY_DSN, SENTRY_ENV, and SENTRY_REL need to be set
 	sentry_init_err := sentry.Init(sentry.ClientOptions{
