@@ -121,14 +121,14 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		fmt.Printf("noids version %s\n", version)
+		fmt.Printf("noids version %s\n", Version)
 		return
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 	logw = NewReopener(logfilename)
 	logw.Reopen()
-	log.Println("-----Starting Noids Server", version)
+	log.Println("-----Starting Noids Server", Version)
 
         // Initialize Sentry Error Reporting. For this to work, the environmant var
         // SENTRY_DSN, SENTRY_ENV, and SENTRY_REL need to be set
