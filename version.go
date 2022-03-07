@@ -1,3 +1,5 @@
 package main
 
-var Version = "unknown"
+
+const Version = "1.2.0"
+
